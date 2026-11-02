@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import RecuperarSenha from './pages/RecuperarSenha'
 import RedefinirSenha from './pages/RedefinirSenha'
+import Automoveis from './pages/Automoveis'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/redefinir-senha" element={<RedefinirSenha />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Home />} />
+        <Route path="/automoveis" element={<Automoveis />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

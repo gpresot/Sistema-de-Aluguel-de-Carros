@@ -17,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import br.com.carro.aluguel.dto.AutomovelResponse;
 
 @RestController
 @RequestMapping("/api/automoveis")
@@ -44,7 +45,7 @@ public class AutomovelController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Automovel cadastrar(
+    public AutomovelResponse cadastrar(
             @RequestBody AutomovelRequest request,
             Authentication authentication
     ) {
@@ -56,10 +57,12 @@ public class AutomovelController {
                             HttpStatus.NOT_FOUND, "Cliente não encontrado."
                     ));
 
-            return automovelService.cadastrarParaCliente(
-                    request.matricula(), request.ano(), request.marca(),
-                    request.modelo(), request.placa(), cliente.getId()
-            );
+            return AutomovelResponse.de(
+        automovelService.cadastrarParaCliente(
+                request.matricula(), request.ano(), request.marca(),
+                request.modelo(), request.placa(), cliente.getId()
+        )
+);
         }
 
         if (usuario.getPerfil() == Perfil.EMPRESA
@@ -70,17 +73,19 @@ public class AutomovelController {
                             HttpStatus.NOT_FOUND, "Agente não encontrado."
                     ));
 
-            return automovelService.cadastrarParaAgente(
-                    request.matricula(), request.ano(), request.marca(),
-                    request.modelo(), request.placa(), agente.getId()
-            );
+            return AutomovelResponse.de(
+        automovelService.cadastrarParaAgente(
+                request.matricula(), request.ano(), request.marca(),
+                request.modelo(), request.placa(), agente.getId()
+        )
+);
         }
 
         throw new AccessDeniedException("Perfil sem permissão.");
     }
 
     @GetMapping
-    public List<Automovel> listar(Authentication authentication) {
+    public List<AutomovelResponse> listar(Authentication authentication) {
         Usuario usuario = obterUsuario(authentication);
 
         if (usuario.getPerfil() == Perfil.CLIENTE) {
@@ -89,7 +94,10 @@ public class AutomovelController {
                             HttpStatus.NOT_FOUND, "Cliente não encontrado."
                     ));
 
-            return automovelService.listarPorCliente(cliente.getId());
+            return automovelService.listarPorCliente(cliente.getId())
+        .stream()
+        .map(AutomovelResponse::de)
+        .toList();
         }
 
         Agente agente = agentes.findByUsuarioId(usuario.getId())
@@ -97,21 +105,24 @@ public class AutomovelController {
                         HttpStatus.NOT_FOUND, "Agente não encontrado."
                 ));
 
-        return automovelService.listarPorAgente(agente.getId());
+        return automovelService.listarPorAgente(agente.getId())
+        .stream()
+        .map(AutomovelResponse::de)
+        .toList();
     }
 
     @GetMapping("/{id}")
-    public Automovel buscar(
+    public AutomovelResponse buscar(
             @PathVariable Long id,
             Authentication authentication
     ) {
         Automovel automovel = automovelService.buscarPorId(id);
         verificarProprietario(automovel, authentication);
-        return automovel;
+        return AutomovelResponse.de(automovel);
     }
 
     @PutMapping("/{id}")
-    public Automovel atualizar(
+    public AutomovelResponse atualizar(
             @PathVariable Long id,
             @RequestBody AutomovelRequest request,
             Authentication authentication
@@ -119,10 +130,12 @@ public class AutomovelController {
         Automovel automovel = automovelService.buscarPorId(id);
         verificarProprietario(automovel, authentication);
 
-        return automovelService.atualizar(
+        return AutomovelResponse.de(
+        automovelService.atualizar(
                 id, request.matricula(), request.ano(),
                 request.marca(), request.modelo(), request.placa()
-        );
+        )
+);
     }
 
     @DeleteMapping("/{id}")

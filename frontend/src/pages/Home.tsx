@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { request } from '../api'
 import { useAuth } from '../auth/context'
+import { Link } from 'react-router-dom'
 
 interface Me {
   email: string
@@ -44,7 +45,7 @@ export default function Home() {
         <p className="subtitulo">
           Sessão validada no servidor: {me ? `${me.email} (${me.perfil})` : 'verificando...'}
         </p>
-        <p className="alerta">Os pedidos de aluguel entram no próximo passo.</p>
+        <div className="acoes-home"><Link className="btn-link" to="/automoveis">Gerenciar automóveis</Link><p className="alerta">Os pedidos de aluguel entram no próximo passo.</p></div>
       </section>
     </main>
   )
