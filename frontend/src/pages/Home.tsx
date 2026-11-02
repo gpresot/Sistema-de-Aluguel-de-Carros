@@ -30,6 +30,8 @@ export default function Home() {
 
   if (!sessao) return null
 
+  const ehCliente = sessao.perfil === 'CLIENTE'
+
   return (
     <main className="home">
       <header className="topo">
@@ -45,7 +47,14 @@ export default function Home() {
         <p className="subtitulo">
           Sessão validada no servidor: {me ? `${me.email} (${me.perfil})` : 'verificando...'}
         </p>
-        <div className="acoes-home"><Link className="btn-link" to="/automoveis">Gerenciar automóveis</Link><p className="alerta">Os pedidos de aluguel entram no próximo passo.</p></div>
+        <div className="acoes-home">
+          {ehCliente ? (
+            <Link className="btn-link" to="/catalogo">Ver catálogo</Link>
+          ) : (
+            <Link className="btn-link" to="/automoveis">Gerenciar automóveis</Link>
+          )}
+          <p className="alerta">Os pedidos de aluguel entram no próximo passo.</p>
+        </div>
       </section>
     </main>
   )

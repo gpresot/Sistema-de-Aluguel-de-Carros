@@ -3,15 +3,13 @@ package br.com.carro.aluguel.model;
 
 import jakarta.persistence.*;
 import java.time.Year;
+import java.math.BigDecimal;
 
 @Entity
-@Table(
-    name = "automoveis",
-    uniqueConstraints = {
+@Table(name = "automoveis", uniqueConstraints = {
         @UniqueConstraint(columnNames = "matricula"),
         @UniqueConstraint(columnNames = "placa")
-    }
-)
+})
 public class Automovel {
 
     @Id
@@ -36,6 +34,8 @@ public class Automovel {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoProprietario tipoProprietario;
+    @Column(nullable = false, precision = 14, scale = 2, columnDefinition = "numeric(14,2) not null default 0")
+    private BigDecimal valorDiaria = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
@@ -54,14 +54,12 @@ public class Automovel {
             String marca,
             String modelo,
             String placa,
-            Cliente cliente
-    ) {
+            Cliente cliente) {
         validarDados(matricula, ano, marca, modelo, placa);
 
         if (cliente == null) {
             throw new IllegalArgumentException(
-                "O proprietário cliente é obrigatório."
-            );
+                    "O proprietário cliente é obrigatório.");
         }
 
         this.matricula = matricula.trim();
@@ -80,14 +78,12 @@ public class Automovel {
             String marca,
             String modelo,
             String placa,
-            Agente agente
-    ) {
+            Agente agente) {
         validarDados(matricula, ano, marca, modelo, placa);
 
         if (agente == null) {
             throw new IllegalArgumentException(
-                "O proprietário agente é obrigatório."
-            );
+                    "O proprietário agente é obrigatório.");
         }
 
         this.matricula = matricula.trim();
@@ -107,8 +103,7 @@ public class Automovel {
             int ano,
             String marca,
             String modelo,
-            String placa
-    ) {
+            String placa) {
         if (matricula == null || matricula.isBlank()) {
             throw new IllegalArgumentException("A matrícula é obrigatória.");
         }
@@ -135,8 +130,7 @@ public class Automovel {
             int ano,
             String marca,
             String modelo,
-            String placa
-    ) {
+            String placa) {
         validarDados(matricula, ano, marca, modelo, placa);
 
         this.matricula = matricula.trim();
@@ -180,5 +174,15 @@ public class Automovel {
 
     public Agente getAgente() {
         return agente;
+    }
+        public BigDecimal getValorDiaria() {
+        return valorDiaria;
+    }
+
+    public void definirValorDiaria(BigDecimal valor) {
+        if (valor == null || valor.signum() < 0) {
+            throw new IllegalArgumentException("O valor da diária não pode ser negativo.");
+        }
+        this.valorDiaria = valor;
     }
 }

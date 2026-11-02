@@ -1,9 +1,9 @@
-
 package br.com.carro.aluguel.service;
 
 import br.com.carro.aluguel.model.Agente;
 import br.com.carro.aluguel.model.Automovel;
 import br.com.carro.aluguel.model.Cliente;
+import br.com.carro.aluguel.model.StatusAluguel;
 import br.com.carro.aluguel.model.TipoProprietario;
 import br.com.carro.aluguel.repository.AgenteRepository;
 import br.com.carro.aluguel.repository.AutomovelRepository;
@@ -27,6 +27,13 @@ public class AutomovelService {
         this.automoveis = automoveis;
         this.clientes = clientes;
         this.agentes = agentes;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Automovel> listarDisponiveis() {
+        return automoveis.findDisponiveis(
+                List.of(StatusAluguel.PENDENTE, StatusAluguel.EM_ANALISE, StatusAluguel.APROVADO)
+        );
     }
 
     @Transactional

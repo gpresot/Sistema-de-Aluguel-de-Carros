@@ -119,3 +119,46 @@ th { color:var(--suave); font-size:.8rem; }
 .btn-perigo { padding:8px 12px; border:1px solid #b42318; border-radius:8px; color:#b42318; background:transparent; cursor:pointer; font:inherit; }
 @media(max-width:760px) { .grade-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .cabecalho-pagina { align-items:flex-start; } }
 @media(max-width:520px) { .grade-form { grid-template-columns:1fr; } .painel-automoveis,.lista-automoveis { padding:16px; } .botoes-form { flex-wrap:wrap; } }
+
+.car-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto 40px;
+}
+
+.car-card {
+  background: var(--card);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.car-card-imagem {
+  height: 120px;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  background: var(--bg);
+}
+
+.car-card-corpo {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.car-card-corpo h3 { margin: 0; font-size: 1.1rem; }
+
+.car-card-placa { margin: 0 0 10px; color: var(--suave); font-size: .9rem; }
+
+.car-card-corpo .btn { margin-top: auto; }
+
+.lista-automoveis .car-grid {
+  width: auto;
+  margin: 0;
+}

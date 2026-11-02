@@ -1,5 +1,6 @@
 export type Perfil = 'CLIENTE' | 'EMPRESA' | 'BANCO'
 
+
 export interface AuthResponse {
   token: string
   email: string
