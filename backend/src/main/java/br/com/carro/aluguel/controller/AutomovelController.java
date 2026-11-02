@@ -1,197 +1,85 @@
-
 package br.com.carro.aluguel.controller;
 
-import br.com.carro.aluguel.model.Agente;
-import br.com.carro.aluguel.model.Automovel;
-import br.com.carro.aluguel.model.Cliente;
-import br.com.carro.aluguel.model.Perfil;
-import br.com.carro.aluguel.model.Usuario;
-import br.com.carro.aluguel.repository.AgenteRepository;
-import br.com.carro.aluguel.repository.AutomovelRepository;
-import br.com.carro.aluguel.repository.ClienteRepository;
-import br.com.carro.aluguel.repository.UsuarioRepository;
+import br.com.carro.aluguel.dto.AutomovelRequest;
+import br.com.carro.aluguel.dto.AutomovelResponse;
 import br.com.carro.aluguel.service.AutomovelService;
+import jakarta.validation.Valid;
+import java.time.Duration;
 import java.util.List;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import br.com.carro.aluguel.dto.AutomovelResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/automoveis")
 public class AutomovelController {
 
-        private final AutomovelService automovelService;
-        private final AutomovelRepository automoveis;
-        private final ClienteRepository clientes;
-        private final AgenteRepository agentes;
-        private final UsuarioRepository usuarios;
+    private final AutomovelService service;
 
-        public AutomovelController(
-                        AutomovelService automovelService,
-                        AutomovelRepository automoveis,
-                        ClienteRepository clientes,
-                        AgenteRepository agentes,
-                        UsuarioRepository usuarios) {
-                this.automovelService = automovelService;
-                this.automoveis = automoveis;
-                this.clientes = clientes;
-                this.agentes = agentes;
-                this.usuarios = usuarios;
-        }
+    public AutomovelController(AutomovelService service) {
+        this.service = service;
+    }
 
-        @PostMapping
-        @ResponseStatus(HttpStatus.CREATED)
-        public AutomovelResponse cadastrar(
-                        @RequestBody AutomovelRequest request,
-                        Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public AutomovelResponse cadastrar(@Valid @RequestBody AutomovelRequest request, Authentication auth) {
+        return service.cadastrar(auth.getName(), request);
+    }
 
-                if (usuario.getPerfil() == Perfil.CLIENTE) {
-                        Cliente cliente = clientes.findByUsuarioId(usuario.getId())
-                                        .orElseThrow(() -> new ResponseStatusException(
-                                                        HttpStatus.NOT_FOUND, "Cliente não encontrado."));
+    /** Automóveis cadastrados pelo usuário autenticado. */
+    @GetMapping
+    public List<AutomovelResponse> listar(Authentication auth) {
+        return service.listarMeus(auth.getName());
+    }
 
-                        return AutomovelResponse.de(
-                                        automovelService.cadastrarParaCliente(
-                                                        request.matricula(), request.ano(), request.marca(),
-                                                        request.modelo(), request.placa(), cliente.getId()));
-                }
+    /** Catálogo (clientes): automóveis sem aluguel em andamento. */
+    @GetMapping("/disponiveis")
+    public List<AutomovelResponse> listarDisponiveis(Authentication auth) {
+        return service.listarDisponiveis(auth.getName());
+    }
 
-                if (usuario.getPerfil() == Perfil.EMPRESA
-                                || usuario.getPerfil() == Perfil.BANCO) {
+    @GetMapping("/{id}")
+    public AutomovelResponse buscar(@PathVariable Long id, Authentication auth) {
+        return service.buscar(auth.getName(), id);
+    }
 
-                        Agente agente = agentes.findByUsuarioId(usuario.getId())
-                                        .orElseThrow(() -> new ResponseStatusException(
-                                                        HttpStatus.NOT_FOUND, "Agente não encontrado."));
+    @PutMapping("/{id}")
+    public AutomovelResponse atualizar(@PathVariable Long id, @Valid @RequestBody AutomovelRequest request,
+                                       Authentication auth) {
+        return service.atualizar(auth.getName(), id, request);
+    }
 
-                        return AutomovelResponse.de(
-                                        automovelService.cadastrarParaAgente(
-                                                        request.matricula(), request.ano(), request.marca(),
-                                                        request.modelo(), request.placa(), agente.getId()));
-                }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluir(@PathVariable Long id, Authentication auth) {
+        service.excluir(auth.getName(), id);
+    }
 
-                throw new AccessDeniedException("Perfil sem permissão.");
-        }
+    // ---------- Fotos ----------
 
-        @GetMapping
-        public List<AutomovelResponse> listar(Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
+    @PostMapping(value = "/{id}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AutomovelResponse enviarFoto(@PathVariable Long id, @RequestParam("arquivo") MultipartFile arquivo,
+                                        Authentication auth) {
+        return service.salvarFoto(auth.getName(), id, arquivo);
+    }
 
-                if (usuario.getPerfil() == Perfil.CLIENTE) {
-                        Cliente cliente = clientes.findByUsuarioId(usuario.getId())
-                                        .orElseThrow(() -> new ResponseStatusException(
-                                                        HttpStatus.NOT_FOUND, "Cliente não encontrado."));
+    @DeleteMapping("/{id}/foto")
+    public AutomovelResponse removerFoto(@PathVariable Long id, Authentication auth) {
+        return service.removerFoto(auth.getName(), id);
+    }
 
-                        return automovelService.listarPorCliente(cliente.getId())
-                                        .stream()
-                                        .map(AutomovelResponse::de)
-                                        .toList();
-                }
-
-                Agente agente = agentes.findByUsuarioId(usuario.getId())
-                                .orElseThrow(() -> new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND, "Agente não encontrado."));
-
-                return automovelService.listarPorAgente(agente.getId())
-                                .stream()
-                                .map(AutomovelResponse::de)
-                                .toList();
-        }
-
-        @GetMapping("/{id}")
-        public AutomovelResponse buscar(
-                        @PathVariable Long id,
-                        Authentication authentication) {
-                Automovel automovel = automovelService.buscarPorId(id);
-                verificarProprietario(automovel, authentication);
-                return AutomovelResponse.de(automovel);
-        }
-
-                @PutMapping("/{id}")
-        public AutomovelResponse atualizar(
-                        @PathVariable Long id,
-                        @RequestBody AutomovelRequest request,
-                        Authentication authentication) {
-                Automovel automovel = automovelService.buscarPorId(id);
-                verificarProprietario(automovel, authentication);
-
-                return AutomovelResponse.de(
-                                automovelService.atualizar(
-                                                id, request.matricula(), request.ano(),
-                                                request.marca(), request.modelo(), request.placa()));
-        }
-
-        @DeleteMapping("/{id}")
-        @ResponseStatus(HttpStatus.NO_CONTENT)
-        public void excluir(
-                        @PathVariable Long id,
-                        Authentication authentication) {
-                Automovel automovel = automovelService.buscarPorId(id);
-                verificarProprietario(automovel, authentication);
-                automovelService.excluir(id);
-        }
-
-        @GetMapping("/disponiveis")
-        public List<AutomovelResponse> listarDisponiveis(Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-
-                if (usuario.getPerfil() != Perfil.CLIENTE) {
-                        throw new AccessDeniedException("Apenas clientes podem ver o catálogo.");
-                }
-
-                Cliente cliente = clientes.findByUsuarioId(usuario.getId())
-                                .orElseThrow(() -> new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND, "Cliente não encontrado."));
-
-                return automovelService.listarDisponiveis()
-                                .stream()
-                                .filter(a -> a.getCliente() == null
-                                                || !a.getCliente().getId().equals(cliente.getId()))
-                                .map(AutomovelResponse::de)
-                                .toList();
-        }
-
-        private Usuario obterUsuario(Authentication authentication) {
-                if (authentication == null) {
-                        throw new AccessDeniedException("Usuário não autenticado.");
-                }
-
-                return usuarios.findByEmail(authentication.getName())
-                                .orElseThrow(() -> new ResponseStatusException(
-                                                HttpStatus.UNAUTHORIZED, "Usuário não encontrado."));
-        }
-
-        private void verificarProprietario(
-                        Automovel automovel,
-                        Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-
-                boolean pertenceAoUsuario;
-
-                if (usuario.getPerfil() == Perfil.CLIENTE) {
-                        pertenceAoUsuario = automovel.getCliente() != null
-                                        && automovel.getCliente().getUsuario().getId()
-                                                        .equals(usuario.getId());
-                } else {
-                        pertenceAoUsuario = automovel.getAgente() != null
-                                        && automovel.getAgente().getUsuario().getId()
-                                                        .equals(usuario.getId());
-                }
-
-                if (!pertenceAoUsuario) {
-                        throw new AccessDeniedException(
-                                        "Você não tem permissão para acessar este automóvel.");
-                }
-        }
-
-        public record AutomovelRequest(
-                        String matricula,
-                        int ano,
-                        String marca,
-                        String modelo,
-                        String placa) {
-        }
+    /** Pública (liberada no SecurityConfig): o navegador carrega a imagem via tag img, sem token. */
+    @GetMapping("/{id}/foto")
+    public ResponseEntity<byte[]> foto(@PathVariable Long id) {
+        AutomovelService.Foto foto = service.obterFoto(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(foto.contentType()))
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
+                .header("X-Content-Type-Options", "nosniff")
+                .body(foto.conteudo());
+    }
 }

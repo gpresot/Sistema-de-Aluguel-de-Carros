@@ -37,6 +37,9 @@ public class Automovel {
     @Column(nullable = false, precision = 14, scale = 2, columnDefinition = "numeric(14,2) not null default 0")
     private BigDecimal valorDiaria = BigDecimal.ZERO;
 
+    /** Instante (epoch ms) do último upload de foto; null = sem foto. Também serve para invalidar cache. */
+    private Long fotoVersao;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
@@ -130,8 +133,10 @@ public class Automovel {
             int ano,
             String marca,
             String modelo,
-            String placa) {
+            String placa,
+            BigDecimal valorDiaria) {
         validarDados(matricula, ano, marca, modelo, placa);
+        definirValorDiaria(valorDiaria);
 
         this.matricula = matricula.trim();
         this.ano = ano;
@@ -177,6 +182,18 @@ public class Automovel {
     }
         public BigDecimal getValorDiaria() {
         return valorDiaria;
+    }
+
+    public Long getFotoVersao() {
+        return fotoVersao;
+    }
+
+    public void registrarFoto() {
+        this.fotoVersao = System.currentTimeMillis();
+    }
+
+    public void removerFoto() {
+        this.fotoVersao = null;
     }
 
     public void definirValorDiaria(BigDecimal valor) {

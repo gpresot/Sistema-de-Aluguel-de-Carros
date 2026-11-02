@@ -1,5 +1,8 @@
 const BASE: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
+/** Monta a URL absoluta de um caminho da API (ex.: fotos servidas pelo back-end). */
+export const urlApi = (caminho: string) => `${BASE}${caminho}`
+
 export class ApiError extends Error {
   status: number
   campos?: Record<string, string>
@@ -25,6 +28,8 @@ export function setUnauthorizedHandler(fn: (() => void) | null) {
 interface Options {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
+  /** Envio de arquivos (multipart); o navegador define o Content-Type com o boundary. */
+  form?: FormData
 }
 
 export async function request<T>(path: string, options: Options = {}): Promise<T> {
@@ -37,7 +42,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
     res = await fetch(`${BASE}${path}`, {
       method: options.method ?? 'GET',
       headers,
-      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      body: options.form ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
     })
   } catch {
     throw new ApiError(0, 'Não foi possível conectar ao servidor.')

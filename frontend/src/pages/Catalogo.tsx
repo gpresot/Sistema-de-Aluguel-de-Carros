@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { ApiError, request } from '../api'
-import { useAuth } from '../auth/context'
 import CarList from '../components/CarList'
+import Topo from '../components/Topo'
+import { hojeIso, moeda } from '../format'
 import type { Automovel } from '../types/automovel'
 
 export default function Catalogo() {
-  const { sessao } = useAuth()
   const [carros, setCarros] = useState<Automovel[]>([])
   const [busca, setBusca] = useState('')
   const [carregando, setCarregando] = useState(true)
@@ -40,6 +39,10 @@ export default function Catalogo() {
     )
   }, [busca, carros])
 
+  const dias = dataInicio && dataFim && dataFim >= dataInicio
+    ? Math.round((Date.parse(dataFim) - Date.parse(dataInicio)) / 86400000) + 1
+    : 0
+
   function alugar(carro: Automovel) {
     setErro(''); setAviso('')
     setSelecionado(carro)
@@ -55,7 +58,7 @@ export default function Catalogo() {
         method: 'POST',
         body: { automovelId: selecionado.id, dataInicio, dataFim },
       })
-      setAviso(`Pedido criado para ${selecionado.marca} ${selecionado.modelo}. Aguardando análise da empresa.`)
+      setAviso(`Pedido criado para ${selecionado.marca} ${selecionado.modelo}. Aguardando aceite da empresa.`)
       setSelecionado(null)
       setDataInicio(''); setDataFim('')
       await carregar()
@@ -68,13 +71,7 @@ export default function Catalogo() {
 
   return (
     <main className="home">
-      <header className="topo">
-        <strong>Aluguel de Carros</strong>
-        <div>
-          <span className="usuario">{sessao?.nome} · {sessao?.perfil}</span>{' '}
-          <Link to="/" className="btn-secundario">Início</Link>
-        </div>
-      </header>
+      <Topo />
 
       <div className="pagina-automoveis">
         <div className="cabecalho-pagina">
@@ -101,14 +98,18 @@ export default function Catalogo() {
           {selecionado && (
             <form onSubmit={confirmarPedido} className="form-pedido">
               <h2>Pedido: {selecionado.marca} {selecionado.modelo}</h2>
+              <p className="subtitulo">
+                {moeda(selecionado.valorDiaria)} por dia
+                {dias > 0 && <> · {dias} {dias === 1 ? 'dia' : 'dias'} = <strong>{moeda(selecionado.valorDiaria * dias)}</strong></>}
+              </p>
               <div className="grade-form">
                 <label className="campo">
                   <span>Data de início</span>
-                  <input type="date" required value={dataInicio} onChange={e => setDataInicio(e.target.value)} />
+                  <input type="date" required min={hojeIso()} value={dataInicio} onChange={e => setDataInicio(e.target.value)} />
                 </label>
                 <label className="campo">
                   <span>Data de devolução</span>
-                  <input type="date" required value={dataFim} onChange={e => setDataFim(e.target.value)} />
+                  <input type="date" required min={dataInicio || hojeIso()} value={dataFim} onChange={e => setDataFim(e.target.value)} />
                 </label>
               </div>
               <div className="botoes-form">

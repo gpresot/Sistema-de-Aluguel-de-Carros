@@ -1,110 +1,86 @@
 package br.com.carro.aluguel.controller;
 
-import br.com.carro.aluguel.model.Aluguel;
+import br.com.carro.aluguel.dto.AluguelResponse;
 import br.com.carro.aluguel.model.Usuario;
-import br.com.carro.aluguel.repository.UsuarioRepository;
 import br.com.carro.aluguel.service.AluguelService;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
+import br.com.carro.aluguel.service.UsuarioLogadoService;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/alugueis")
 public class AluguelController {
 
-        private final AluguelService aluguelService;
-        private final UsuarioRepository usuarios;
+    private final AluguelService service;
+    private final UsuarioLogadoService logado;
 
-        public AluguelController(AluguelService aluguelService, UsuarioRepository usuarios) {
-                this.aluguelService = aluguelService;
-                this.usuarios = usuarios;
-        }
+    public AluguelController(AluguelService service, UsuarioLogadoService logado) {
+        this.service = service;
+        this.logado = logado;
+    }
 
-        public record PedidoAluguelRequest(Long automovelId, LocalDate dataInicio, LocalDate dataFim) {}
+    public record PedidoAluguelRequest(Long automovelId, LocalDate dataInicio, LocalDate dataFim) {}
 
-        public record DatasRequest(LocalDate dataInicio, LocalDate dataFim) {}
+    public record DatasRequest(LocalDate dataInicio, LocalDate dataFim) {}
 
-        public record AluguelResponse(Long id, Long automovelId, LocalDate dataInicio, LocalDate dataFim, String status) {}
+    public record RecusaRequest(String motivo) {}
 
-        // Cliente: cria pedido
-        @PostMapping
-        @ResponseStatus(HttpStatus.CREATED)
-        public AluguelResponse criar(@RequestBody PedidoAluguelRequest req, Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                Aluguel a = aluguelService.criarPedido(usuario, req.automovelId(), req.dataInicio(), req.dataFim());
-                return paraResponse(a);
-        }
+    public record ParecerRequest(Boolean aprovar, String motivo) {}
 
-        // Cliente: lista os próprios pedidos
-        @GetMapping("/meus")
-        public List<AluguelResponse> listarMeus(Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                return aluguelService.listarDoCliente(usuario).stream()
-                                .map(AluguelController::paraResponse)
-                                .toList();
-        }
+    // Cliente: cria pedido (nasce PENDENTE)
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public AluguelResponse criar(@RequestBody PedidoAluguelRequest req, Authentication auth) {
+        return service.criarPedido(usuario(auth), req.automovelId(), req.dataInicio(), req.dataFim());
+    }
 
-        // Agente (empresa ou banco): lista pedidos dos seus automóveis
-        @GetMapping("/agente")
-        public List<AluguelResponse> listarDoAgente(Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                return aluguelService.listarDoAgente(usuario).stream()
-                                .map(AluguelController::paraResponse)
-                                .toList();
-        }
+    // Cliente: lista os próprios pedidos
+    @GetMapping("/meus")
+    public List<AluguelResponse> listarMeus(Authentication auth) {
+        return service.listarDoCliente(usuario(auth));
+    }
 
-        // Agente: coloca o pedido em análise
-        @PutMapping("/{id}/analise")
-        public AluguelResponse iniciarAnalise(@PathVariable Long id, Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                return paraResponse(aluguelService.iniciarAnalise(usuario, id));
-        }
+    // Empresa: pedidos dos seus carros. Banco: pedidos em análise e os já avaliados por ele
+    @GetMapping("/agente")
+    public List<AluguelResponse> listarDoAgente(Authentication auth) {
+        return service.listarDoAgente(usuario(auth));
+    }
 
-        // Agente: aprova (com análise financeira positiva) ou rejeita
-        @PutMapping("/{id}/parecer")
-        public AluguelResponse darParecer(@PathVariable Long id,
-                        @RequestParam boolean aprovar,
-                        Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                return paraResponse(aluguelService.darParecer(usuario, id, aprovar));
-        }
+    // Empresa: aceita o pedido (PENDENTE -> EM_ANALISE, segue para o banco)
+    @PutMapping("/{id}/aceitar")
+    public AluguelResponse aceitar(@PathVariable Long id, Authentication auth) {
+        return service.aceitarPedido(usuario(auth), id);
+    }
 
-        // Cliente (pendente) ou agente (pendente/em análise): altera datas
-        @PutMapping("/{id}/datas")
-        public AluguelResponse alterarDatas(@PathVariable Long id,
-                        @RequestBody DatasRequest req,
-                        Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                return paraResponse(aluguelService.alterarDatas(usuario, id, req.dataInicio(), req.dataFim()));
-        }
+    // Empresa: recusa o pedido (PENDENTE -> REJEITADO)
+    @PutMapping("/{id}/recusar")
+    public AluguelResponse recusar(@PathVariable Long id, @RequestBody(required = false) RecusaRequest req,
+                                   Authentication auth) {
+        return service.recusarPedido(usuario(auth), id, req == null ? null : req.motivo());
+    }
 
-        // Cliente: cancela o pedido (mantém o registro com status CANCELADO)
-        @DeleteMapping("/{id}")
-        public AluguelResponse cancelar(@PathVariable Long id, Authentication authentication) {
-                Usuario usuario = obterUsuario(authentication);
-                return paraResponse(aluguelService.cancelarPedido(usuario, id));
-        }
+    // Banco: análise de renda e parecer (EM_ANALISE -> APROVADO ou REJEITADO)
+    @PutMapping("/{id}/parecer")
+    public AluguelResponse parecer(@PathVariable Long id, @RequestBody ParecerRequest req, Authentication auth) {
+        return service.parecerFinanceiro(usuario(auth), id, Boolean.TRUE.equals(req.aprovar()), req.motivo());
+    }
 
-        private static AluguelResponse paraResponse(Aluguel a) {
-                return new AluguelResponse(
-                                a.getId(),
-                                a.getAutomovel().getId(),
-                                a.getDataInicio(),
-                                a.getDataFim(),
-                                a.getStatus().name());
-        }
+    // Cliente ou empresa: altera datas enquanto o pedido estiver pendente
+    @PutMapping("/{id}/datas")
+    public AluguelResponse alterarDatas(@PathVariable Long id, @RequestBody DatasRequest req, Authentication auth) {
+        return service.alterarDatas(usuario(auth), id, req.dataInicio(), req.dataFim());
+    }
 
-        private Usuario obterUsuario(Authentication authentication) {
-                if (authentication == null) {
-                        throw new AccessDeniedException("Usuário não autenticado.");
-                }
-                return usuarios.findByEmail(authentication.getName())
-                                .orElseThrow(() -> new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND, "Usuário não encontrado."));
-        }
+    // Cliente: cancela (mantém o registro com status CANCELADO)
+    @DeleteMapping("/{id}")
+    public AluguelResponse cancelar(@PathVariable Long id, Authentication auth) {
+        return service.cancelarPedido(usuario(auth), id);
+    }
+
+    private Usuario usuario(Authentication auth) {
+        return logado.usuario(auth.getName());
+    }
 }

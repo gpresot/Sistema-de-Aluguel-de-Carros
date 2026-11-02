@@ -28,3 +28,6 @@ export interface RegistroClienteInput {
 export interface Mensagem {
   mensagem: string
 }
+
+export type { Automovel } from './automovel'
+export type { Aluguel, AnaliseFinanceira, StatusAluguel } from './aluguel'

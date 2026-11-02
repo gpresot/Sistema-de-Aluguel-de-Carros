@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { request } from '../api'
 import { useAuth } from '../auth/context'
 import { Link } from 'react-router-dom'
+import Topo from '../components/Topo'
 
 interface Me {
   email: string
@@ -9,13 +10,13 @@ interface Me {
 }
 
 const DESCRICAO: Record<string, string> = {
-  CLIENTE: 'Aqui você vai criar, modificar, consultar e cancelar seus pedidos de aluguel.',
-  EMPRESA: 'Aqui você vai avaliar pedidos, executar contratos e gerenciar automóveis.',
-  BANCO: 'Aqui você vai avaliar pedidos, conceder crédito, executar contratos e gerenciar automóveis.',
+  CLIENTE: 'Escolha um carro no catálogo, peça o aluguel e acompanhe o status do seu pedido.',
+  EMPRESA: 'Aceite ou recuse os pedidos dos seus carros e gerencie a frota (com fotos e valor da diária).',
+  BANCO: 'Analise a renda dos clientes e aprove ou reprove os pedidos aceitos pelas empresas.',
 }
 
 export default function Home() {
-  const { sessao, logout } = useAuth()
+  const { sessao } = useAuth()
   const [me, setMe] = useState<Me | null>(null)
 
   useEffect(() => {
@@ -34,13 +35,7 @@ export default function Home() {
 
   return (
     <main className="home">
-      <header className="topo">
-        <strong>Aluguel de Carros</strong>
-        <div>
-          <span className="usuario">{sessao.nome} · {sessao.perfil}</span>
-          <button className="btn-secundario" onClick={logout}>Sair</button>
-        </div>
-      </header>
+      <Topo />
       <section className="card card-largo">
         <h1>Olá, {sessao.nome}</h1>
         <p>{DESCRICAO[sessao.perfil]}</p>
@@ -48,12 +43,9 @@ export default function Home() {
           Sessão validada no servidor: {me ? `${me.email} (${me.perfil})` : 'verificando...'}
         </p>
         <div className="acoes-home">
-          {ehCliente ? (
-            <Link className="btn-link" to="/catalogo">Ver catálogo</Link>
-          ) : (
-            <Link className="btn-link" to="/automoveis">Gerenciar automóveis</Link>
-          )}
-          <p className="alerta">Os pedidos de aluguel entram no próximo passo.</p>
+          {ehCliente && <Link className="btn-link" to="/catalogo">Ver catálogo</Link>}{' '}
+          <Link className="btn-link" to="/pedidos">{ehCliente ? 'Meus pedidos' : 'Pedidos'}</Link>{' '}
+          <Link className="btn-link" to="/automoveis">{ehCliente ? 'Meus automóveis' : 'Gerenciar frota'}</Link>
         </div>
       </section>
     </main>

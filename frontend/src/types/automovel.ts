@@ -5,5 +5,8 @@ export type Automovel = {
   marca: string
   modelo: string
   placa: string
+  valorDiaria: number
   tipoProprietario: string
+  proprietarioNome: string
+  fotoUrl: string | null
 }

@@ -3,6 +3,7 @@ package br.com.carro.aluguel.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "alugueis")
@@ -30,7 +31,31 @@ public class Aluguel {
     @Column(nullable = false)
     private StatusAluguel status = StatusAluguel.PENDENTE;
 
+    /** Banco que fez a análise financeira (aprovou ou reprovou). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "avaliador_id")
+    private Agente avaliador;
+
+    /** Justificativa da recusa/reprovação ou observação da aprovação. */
+    @Column(length = 500)
+    private String motivo;
+
+    private LocalDateTime dataAvaliacao;
+
+    private LocalDateTime criadoEm = LocalDateTime.now();
+
     public Long getId() { return id; }
+
+    public Agente getAvaliador() { return avaliador; }
+    public String getMotivo() { return motivo; }
+    public LocalDateTime getDataAvaliacao() { return dataAvaliacao; }
+    public LocalDateTime getCriadoEm() { return criadoEm; }
+
+    public void registrarAvaliacao(Agente avaliador, String motivo) {
+        this.avaliador = avaliador;
+        this.motivo = motivo == null || motivo.isBlank() ? null : motivo.trim();
+        this.dataAvaliacao = LocalDateTime.now();
+    }
 
     public Automovel getAutomovel() { return automovel; }
     public void setAutomovel(Automovel automovel) { this.automovel = automovel; }
