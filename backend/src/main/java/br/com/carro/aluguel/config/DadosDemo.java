@@ -26,7 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Dados de demonstração: frota de clássicos ({@value #UNIDADES_POR_MODELO} por modelo), conta de empresa e de banco.
+ * Dados de demonstração: frota de clássicos (um automóvel de cada modelo em {@code MODELOS}), conta de empresa e de banco.
  * As fotos reais são lidas de {@code src/main/resources/fotos-demo/<marca>-<modelo>.jpg}
  * (ex.: {@code volkswagen-fusca.jpg}) e anexadas a todo automóvel que ainda não tenha foto.
  */
@@ -40,7 +40,7 @@ public class DadosDemo implements ApplicationRunner {
     private static final long TAMANHO_MAXIMO_FOTO = 3L * 1024 * 1024;
 
     /** Quantos automóveis de cada modelo entram na frota de demonstração. */
-    private static final int UNIDADES_POR_MODELO = 2;
+    private static final int UNIDADES_POR_MODELO = 1;
 
     /** { marca, modelo, primeiro ano de fabricação no Brasil, último ano }. */
     private static final String[][] MODELOS = {
