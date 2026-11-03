@@ -265,7 +265,7 @@ cd ..
 
 #### Contas de demonstração
 
-Na primeira inicialização, o back-end cria as contas de agentes e a frota de demonstração (20 carros antigos, 2 de cada modelo, com foto).
+Na primeira inicialização, o back-end cria as contas de agentes e a frota de demonstração (10 carros antigos, um de cada modelo, com foto).
 
 | Perfil | E-mail | Senha |
 | :--- | :--- | :--- |
@@ -441,11 +441,10 @@ cd backend
 ```
 *Ferramentas: JUnit 5 e Spring Boot Test.*
 
-Para checar o front-end:
+Para checar o front-end (verifica os tipos TypeScript e gera o build):
 
 ```bash
 cd frontend
-npm run lint
 npm run build
 ```
 
