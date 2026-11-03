@@ -46,25 +46,19 @@ a { color: var(--primaria); }
 :focus-visible { outline: 2px solid var(--primaria); outline-offset: 2px; }
 
 /* ---- Telas de acesso (login, cadastro, senha) ---- */
-.auth-page { min-height: 100vh; display: grid; grid-template-columns: minmax(240px, 32%) 1fr; }
-.auth-marca {
-  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
-  padding: 32px 28px; background: #040403; color: #e9dfc9;
+/* Sempre escuras, para combinar com o fundo preto da logo. */
+.auth-page {
+  --bg: #040403; --card: #1c211d; --texto: #e6eae6; --suave: #98a398; --borda: #333b34;
+  --primaria: #7cc29b; --primaria-escura: #9bd3b3; --sobre-primaria: #0f1a13;
+  --erro: #ff9a8f; --erro-bg: #3a1f1c; --ok: #7fd3a4; --ok-bg: #172b1f;
+  color-scheme: dark;
+  min-height: 100vh; display: grid; place-items: center; padding: 32px 16px;
+  background: var(--bg); color: var(--texto);
 }
-.logo { display: block; width: 100%; max-width: 360px; height: auto; }
-.auth-marca p { margin: 0; max-width: 24ch; color: #b9b19f; }
-.auth-lado { display: grid; place-items: center; padding: 40px; }
 .auth-conteudo { width: 100%; max-width: 400px; }
 .auth-largo { max-width: 640px; }
 .auth-conteudo h1 { margin: 0 0 4px; font-size: 1.75rem; }
-@media (max-width: 760px) {
-  .auth-page { grid-template-columns: 1fr; }
-  .auth-marca { flex-direction: row; align-items: center; padding: 16px 20px; }
-  .logo { width: auto; height: 72px; }
-  .auth-marca p { display: none; }
-  .auth-lado { padding: 28px 20px 40px; }
-}
-
+.logo { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 20px; }
 .card {
   width: 100%; max-width: 400px; background: var(--card);
   border: 1px solid var(--borda); border-radius: 4px; padding: 28px;
