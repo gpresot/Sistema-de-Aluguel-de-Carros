@@ -19,13 +19,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Dados de demonstração: frota de clássicos, conta de empresa e de banco.
+ * Dados de demonstração: frota de clássicos ({@value #UNIDADES_POR_MODELO} por modelo), conta de empresa e de banco.
  * As fotos reais são lidas de {@code src/main/resources/fotos-demo/<marca>-<modelo>.jpg}
  * (ex.: {@code volkswagen-fusca.jpg}) e anexadas a todo automóvel que ainda não tenha foto.
  */
@@ -37,6 +38,9 @@ public class DadosDemo implements ApplicationRunner {
     private static final String PASTA_FOTOS = "fotos-demo/";
     private static final String[] EXTENSOES = { "jpg", "jpeg", "png", "webp" };
     private static final long TAMANHO_MAXIMO_FOTO = 3L * 1024 * 1024;
+
+    /** Quantos automóveis de cada modelo entram na frota de demonstração. */
+    private static final int UNIDADES_POR_MODELO = 2;
 
     /** { marca, modelo, primeiro ano de fabricação no Brasil, último ano }. */
     private static final String[][] MODELOS = {
@@ -52,23 +56,26 @@ public class DadosDemo implements ApplicationRunner {
     private final AutomovelRepository automoveis;
     private final FotoAutomovelRepository fotos;
     private final PasswordEncoder passwordEncoder;
+    private final String senhaAgentes;
 
     public DadosDemo(UsuarioRepository usuarios,
             AgenteRepository agentes,
             AutomovelRepository automoveis,
             FotoAutomovelRepository fotos,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            @Value("${app.seed.agente-senha:123456}") String senhaAgentes) {
         this.usuarios = usuarios;
         this.agentes = agentes;
         this.automoveis = automoveis;
         this.fotos = fotos;
         this.passwordEncoder = passwordEncoder;
+        this.senhaAgentes = senhaAgentes;
     }
 
     @Override
     public void run(ApplicationArguments args) {
         Agente empresa = obterOuCriarAgente("empresa@teste.com", Perfil.EMPRESA,
-                "Locadora Demo", "12345678000199");
+                "Presot Clássicos", "12345678000199");
         if (automoveis.count() == 0) {
             cadastrarCarros(empresa);
         }
@@ -85,26 +92,31 @@ public class DadosDemo implements ApplicationRunner {
                                 "Usuário " + email + " sem agente associado")))
                 .orElseGet(() -> {
                     Usuario usuario = new Usuario(email,
-                            passwordEncoder.encode("123456"), perfil);
+                            passwordEncoder.encode(senhaAgentes), perfil);
                     return agentes.save(new Agente(nome, cnpj, usuario));
                 });
     }
 
     private void cadastrarCarros(Agente empresa) {
-        for (int i = 1; i <= 100; i++) {
-            String[] m = MODELOS[i % MODELOS.length];
-            int anoMin = Integer.parseInt(m[2]);
-            int anoMax = Integer.parseInt(m[3]);
-            int ano = anoMin + (i * 7) % (anoMax - anoMin + 1);
-            Automovel automovel = new Automovel(
-                    "MAT-%04d".formatted(i),
-                    ano,
-                    m[0],
-                    m[1],
-                    "ANT%04d".formatted(i),
-                    empresa);
-            automovel.definirValorDiaria(BigDecimal.valueOf(120 + (i % 10) * 15));
-            automoveis.save(automovel);
+        int numero = 1;
+        for (int m = 0; m < MODELOS.length; m++) {
+            String[] modelo = MODELOS[m];
+            int anoMin = Integer.parseInt(modelo[2]);
+            int anoMax = Integer.parseInt(modelo[3]);
+            for (int u = 0; u < UNIDADES_POR_MODELO; u++) {
+                // Espalha as unidades do mesmo modelo ao longo dos anos de fabricação.
+                int ano = anoMin + (anoMax - anoMin) * (2 * u + 1) / (2 * UNIDADES_POR_MODELO);
+                Automovel automovel = new Automovel(
+                        "MAT-%04d".formatted(numero),
+                        ano,
+                        modelo[0],
+                        modelo[1],
+                        "ANT%04d".formatted(numero),
+                        empresa);
+                automovel.definirValorDiaria(BigDecimal.valueOf(120 + m * 15 + u * 20));
+                automoveis.save(automovel);
+                numero++;
+            }
         }
     }
 
