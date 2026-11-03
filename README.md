@@ -469,7 +469,7 @@ As fotos dos modelos em `backend/src/main/resources/fotos-demo/` vieram do Wikim
 
 | 👤 Nome | :octocat: GitHub | 💼 LinkedIn | 📤 E-mail |
 |---------|-----------------|-------------|-----------|
-| Guilherme Presot | [github.com/seu-usuario](https://github.com/seu-usuario) | [linkedin.com/in/seu-perfil](https://www.linkedin.com/in/seu-perfil) | [seu-email@exemplo.com](mailto:seu-email@exemplo.com) |
+| Guilherme Presot | [github.com/seu-usuario](https://github.com/gpresot) | [linkedin.com/in/seu-perfil](https://www.linkedin.com/in/guilhermepresot/) | [seu-email@exemplo.com](mailto:gui.presot@gmail.com) |
 
 ---
 
