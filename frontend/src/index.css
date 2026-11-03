@@ -51,16 +51,19 @@ a { color: var(--primaria); }
   display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
   padding: 40px 36px; background: #1d4a38; color: #eef3ee;
 }
-.auth-marca strong { font-family: var(--fonte-titulo); font-size: 1.5rem; }
+.logo { display: inline-flex; align-items: center; gap: 12px; }
+.logo-placa { padding: 3px 9px; font-size: 1rem; }
+.logo-nome { font-family: var(--fonte-titulo); font-size: 1.4rem; font-weight: 700; }
 .auth-marca p { margin: 0; max-width: 18ch; color: #c9d8cd; }
-.auth-conteudo { width: 100%; max-width: 440px; padding: 12vh 40px 48px; }
-.auth-largo { max-width: 680px; }
+.auth-lado { display: grid; place-items: center; padding: 40px; }
+.auth-conteudo { width: 100%; max-width: 400px; }
+.auth-largo { max-width: 640px; }
 .auth-conteudo h1 { margin: 0 0 4px; font-size: 1.75rem; }
 @media (max-width: 760px) {
   .auth-page { grid-template-columns: 1fr; }
   .auth-marca { flex-direction: row; align-items: center; padding: 16px 20px; }
   .auth-marca p { display: none; }
-  .auth-conteudo { padding: 28px 20px 40px; }
+  .auth-lado { padding: 28px 20px 40px; }
 }
 
 .card {
