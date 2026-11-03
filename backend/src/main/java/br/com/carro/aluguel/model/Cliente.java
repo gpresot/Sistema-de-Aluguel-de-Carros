@@ -56,6 +56,23 @@ public class Cliente {
         }
     }
 
+    /** Atualiza os dados cadastrais; os rendimentos informados substituem os atuais (máximo 3). */
+    public void atualizarDados(String nome, String rg, String cpf, String endereco, String profissao,
+                               List<Rendimento> novosRendimentos) {
+        if (novosRendimentos != null && novosRendimentos.size() > MAX_RENDIMENTOS) {
+            throw new IllegalArgumentException("Um cliente pode ter no máximo " + MAX_RENDIMENTOS + " rendimentos");
+        }
+        this.nome = nome;
+        this.rg = rg;
+        this.cpf = cpf;
+        this.endereco = endereco;
+        this.profissao = profissao;
+        this.rendimentos.clear();
+        if (novosRendimentos != null) {
+            this.rendimentos.addAll(novosRendimentos);
+        }
+    }
+
     public Long getId() { return id; }
     public String getNome() { return nome; }
     public String getRg() { return rg; }

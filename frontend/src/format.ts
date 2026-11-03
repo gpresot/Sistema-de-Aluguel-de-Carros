@@ -15,6 +15,6 @@ export const ROTULO_STATUS: Record<string, string> = {
   EM_ANALISE: 'Em análise financeira',
   APROVADO: 'Aprovado',
   REJEITADO: 'Rejeitado',
+  CONTRATADO: 'Contrato executado',
   CANCELADO: 'Cancelado',
-  FINALIZADO: 'Finalizado',
 }

@@ -1,12 +1,12 @@
 package br.com.carro.aluguel.model;
 
 public enum StatusAluguel {
-    
+
     PENDENTE,
     EM_ANALISE,
     APROVADO,
     REJEITADO,
-    CANCELADO,
-    FINALIZADO
-    
+    CONTRATADO,
+    CANCELADO
+
 }

@@ -1,6 +1,7 @@
 package br.com.carro.aluguel.dto;
 
 import br.com.carro.aluguel.model.Aluguel;
+import br.com.carro.aluguel.model.ContratoCredito;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,11 +20,21 @@ public record AluguelResponse(
         LocalDateTime criadoEm,
         String clienteNome,
         AutomovelResponse automovel,
-        AnaliseFinanceiraResponse analise
+        AnaliseFinanceiraResponse analise,
+        ContratoCreditoResponse contratoCredito
 ) {
     /** Resultado da análise de renda feita pelo banco. */
     public record AnaliseFinanceiraResponse(BigDecimal rendaMensal, BigDecimal parcelaMensal,
                                             BigDecimal limiteParcela, boolean aprovada) {
+    }
+
+    /** Contrato de crédito vinculado ao pedido. */
+    public record ContratoCreditoResponse(Long id, String bancoNome, BigDecimal valorFinanciado,
+                                          BigDecimal taxaJurosMensal, LocalDateTime criadoEm) {
+        static ContratoCreditoResponse de(ContratoCredito c) {
+            return c == null ? null : new ContratoCreditoResponse(c.getId(), c.getBanco().getNome(),
+                    c.getValorFinanciado(), c.getTaxaJurosMensal(), c.getCriadoEm());
+        }
     }
 
     /** Chamar dentro de uma transação (acessa associações carregadas sob demanda). */
@@ -42,6 +53,7 @@ public record AluguelResponse(
                 a.getCriadoEm(),
                 a.getCliente().getNome(),
                 AutomovelResponse.de(a.getAutomovel()),
-                analise);
+                analise,
+                ContratoCreditoResponse.de(a.getContratoCredito()));
     }
 }

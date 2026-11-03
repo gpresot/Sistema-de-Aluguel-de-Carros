@@ -7,6 +7,7 @@ import RecuperarSenha from './pages/RecuperarSenha'
 import RedefinirSenha from './pages/RedefinirSenha'
 import Automoveis from './pages/Automoveis'
 import Catalogo from './pages/Catalogo'
+import MeuCadastro from './pages/MeuCadastro'
 import Pedidos from './pages/Pedidos'
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/automoveis" element={<Automoveis />} />
         <Route path="/catalogo" element={<Catalogo />} />
         <Route path="/pedidos" element={<Pedidos />} />
+        <Route path="/meu-cadastro" element={<MeuCadastro />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -4,6 +4,7 @@ import br.com.carro.aluguel.dto.AluguelResponse;
 import br.com.carro.aluguel.model.Usuario;
 import br.com.carro.aluguel.service.AluguelService;
 import br.com.carro.aluguel.service.UsuarioLogadoService;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,8 @@ public class AluguelController {
     public record RecusaRequest(String motivo) {}
 
     public record ParecerRequest(Boolean aprovar, String motivo) {}
+
+    public record CreditoRequest(BigDecimal valorFinanciado, BigDecimal taxaJurosMensal) {}
 
     // Cliente: cria pedido (nasce PENDENTE)
     @PostMapping
@@ -68,7 +71,20 @@ public class AluguelController {
         return service.parecerFinanceiro(usuario(auth), id, Boolean.TRUE.equals(req.aprovar()), req.motivo());
     }
 
-    // Cliente ou empresa: altera datas enquanto o pedido estiver pendente
+    // Banco: concede contrato de crédito a um pedido aprovado
+    @PostMapping("/{id}/credito")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AluguelResponse concederCredito(@PathVariable Long id, @RequestBody CreditoRequest req, Authentication auth) {
+        return service.concederCredito(usuario(auth), id, req.valorFinanciado(), req.taxaJurosMensal());
+    }
+
+    // Agente autorizado: executa o contrato de um pedido aprovado (APROVADO -> CONTRATADO)
+    @PutMapping("/{id}/contrato")
+    public AluguelResponse executarContrato(@PathVariable Long id, Authentication auth) {
+        return service.executarContrato(usuario(auth), id);
+    }
+
+    // Cliente, empresa (pedido pendente) ou banco (pedido em análise): altera datas
     @PutMapping("/{id}/datas")
     public AluguelResponse alterarDatas(@PathVariable Long id, @RequestBody DatasRequest req, Authentication auth) {
         return service.alterarDatas(usuario(auth), id, req.dataInicio(), req.dataFim());

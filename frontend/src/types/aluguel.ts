@@ -1,12 +1,20 @@
 import type { Automovel } from './automovel'
 
-export type StatusAluguel = 'PENDENTE' | 'EM_ANALISE' | 'APROVADO' | 'REJEITADO' | 'CANCELADO' | 'FINALIZADO'
+export type StatusAluguel = 'PENDENTE' | 'EM_ANALISE' | 'APROVADO' | 'REJEITADO' | 'CONTRATADO' | 'CANCELADO'
 
 export type AnaliseFinanceira = {
   rendaMensal: number
   parcelaMensal: number
   limiteParcela: number
   aprovada: boolean
+}
+
+export type ContratoCredito = {
+  id: number
+  bancoNome: string
+  valorFinanciado: number
+  taxaJurosMensal: number
+  criadoEm: string | null
 }
 
 export type Aluguel = {
@@ -23,4 +31,5 @@ export type Aluguel = {
   clienteNome: string
   automovel: Automovel
   analise: AnaliseFinanceira | null
+  contratoCredito: ContratoCredito | null
 }

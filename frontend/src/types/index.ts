@@ -30,4 +30,15 @@ export interface Mensagem {
 }
 
 export type { Automovel } from './automovel'
-export type { Aluguel, AnaliseFinanceira, StatusAluguel } from './aluguel'
+export type { Aluguel, AnaliseFinanceira, ContratoCredito, StatusAluguel } from './aluguel'
+
+export interface Cliente {
+  id: number
+  email: string
+  nome: string
+  rg: string
+  cpf: string
+  endereco: string
+  profissao: string
+  rendimentos: RendimentoInput[]
+}

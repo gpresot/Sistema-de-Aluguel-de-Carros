@@ -7,6 +7,7 @@ import br.com.carro.aluguel.repository.AgenteRepository;
 import br.com.carro.aluguel.repository.AluguelRepository;
 import br.com.carro.aluguel.repository.AutomovelRepository;
 import br.com.carro.aluguel.repository.ClienteRepository;
+import br.com.carro.aluguel.repository.ContratoCreditoRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -23,6 +24,9 @@ import org.springframework.web.server.ResponseStatusException;
  * PENDENTE --(empresa aceita)--> EM_ANALISE --(banco aprova)--> APROVADO
  *    |                              |
  *    +--(empresa recusa)--> REJEITADO <--(banco reprova)
+ *
+ * APROVADO --(banco concede crédito, opcional)--> contrato de crédito vinculado ao pedido
+ * APROVADO --(agente autorizado executa o contrato)--> CONTRATADO
  * Cliente pode cancelar enquanto PENDENTE, EM_ANALISE ou APROVADO.
  * </pre>
  * A empresa (dona do automóvel) decide se aceita o pedido. Quem faz a análise financeira da renda do
@@ -37,19 +41,22 @@ public class AluguelService {
 
     /** Status que reservam o automóvel. */
     public static final List<StatusAluguel> ATIVOS = List.of(
-            StatusAluguel.PENDENTE, StatusAluguel.EM_ANALISE, StatusAluguel.APROVADO);
+            StatusAluguel.PENDENTE, StatusAluguel.EM_ANALISE, StatusAluguel.APROVADO, StatusAluguel.CONTRATADO);
 
     private final AluguelRepository alugueis;
     private final AutomovelRepository automoveis;
     private final ClienteRepository clientes;
     private final AgenteRepository agentes;
+    private final ContratoCreditoRepository contratos;
 
     public AluguelService(AluguelRepository alugueis, AutomovelRepository automoveis,
-                          ClienteRepository clientes, AgenteRepository agentes) {
+                          ClienteRepository clientes, AgenteRepository agentes,
+                          ContratoCreditoRepository contratos) {
         this.alugueis = alugueis;
         this.automoveis = automoveis;
         this.clientes = clientes;
         this.agentes = agentes;
+        this.contratos = contratos;
     }
 
     // ---------- CLIENTE ----------
@@ -106,9 +113,13 @@ public class AluguelService {
             }
         } else {
             exigirAgente(usuario);
-            aluguel = buscarDoAgente(usuario, aluguelId);
-            if (aluguel.getStatus() != StatusAluguel.PENDENTE) {
-                throw erro(HttpStatus.CONFLICT, "A empresa só pode modificar pedidos pendentes.");
+            aluguel = buscarPorId(aluguelId);
+            if (ehDono(usuario, aluguel)) {
+                exigirStatus(aluguel, StatusAluguel.PENDENTE, "A empresa só pode modificar pedidos pendentes.");
+            } else if (usuario.getPerfil() == Perfil.BANCO) {
+                exigirStatus(aluguel, StatusAluguel.EM_ANALISE, "O banco só pode modificar pedidos em análise.");
+            } else {
+                throw erro(HttpStatus.FORBIDDEN, "Este pedido não envolve um automóvel seu.");
             }
         }
         aluguel.setDataInicio(dataInicio);
@@ -193,6 +204,46 @@ public class AluguelService {
         return new AnaliseFinanceiraResponse(renda.setScale(2, RoundingMode.HALF_UP), parcela, limite, aprovada);
     }
 
+    /**
+     * Banco: concede um contrato de crédito a um pedido aprovado. O valor financiado não pode
+     * ultrapassar o valor total do aluguel.
+     */
+    @Transactional
+    public AluguelResponse concederCredito(Usuario usuario, Long aluguelId, BigDecimal valorFinanciado,
+                                           BigDecimal taxaJurosMensal) {
+        exigirBanco(usuario);
+        Aluguel aluguel = buscarPorId(aluguelId);
+        exigirStatus(aluguel, StatusAluguel.APROVADO, "Só é possível conceder crédito a pedidos aprovados.");
+        if (contratos.existsByAluguelId(aluguelId)) {
+            throw erro(HttpStatus.CONFLICT, "Este pedido já possui um contrato de crédito.");
+        }
+        if (valorFinanciado == null || taxaJurosMensal == null) {
+            throw erro(HttpStatus.BAD_REQUEST, "Informe o valor financiado e a taxa de juros mensal.");
+        }
+        BigDecimal total = valorTotal(aluguel);
+        if (valorFinanciado.compareTo(total) > 0) {
+            throw erro(HttpStatus.BAD_REQUEST,
+                    "O valor financiado não pode ser maior que o valor total do aluguel (R$ " + total + ").");
+        }
+        ContratoCredito contrato = contratos.save(
+                new ContratoCredito(aluguel, agenteDe(usuario), valorFinanciado, taxaJurosMensal));
+        aluguel.setContratoCredito(contrato);
+        return resposta(aluguel, usuario);
+    }
+
+    /** Agente autorizado (dono do automóvel ou banco que avaliou/financiou) executa o contrato. */
+    @Transactional
+    public AluguelResponse executarContrato(Usuario usuario, Long aluguelId) {
+        exigirAgente(usuario);
+        Aluguel aluguel = buscarPorId(aluguelId);
+        if (!agenteAutorizado(usuario, aluguel)) {
+            throw erro(HttpStatus.FORBIDDEN, "Você não está autorizado a executar o contrato deste pedido.");
+        }
+        exigirStatus(aluguel, StatusAluguel.APROVADO, "Só é possível executar o contrato de pedidos aprovados.");
+        aluguel.setStatus(StatusAluguel.CONTRATADO);
+        return resposta(aluguel, usuario);
+    }
+
     // ---------- AGENTES (empresa e banco) ----------
 
     /** Empresa: pedidos dos seus carros. Banco: pedidos em análise, os que avaliou e os de seus carros. */
@@ -200,7 +251,8 @@ public class AluguelService {
     public List<AluguelResponse> listarDoAgente(Usuario usuario) {
         exigirAgente(usuario);
         List<Aluguel> lista = usuario.getPerfil() == Perfil.BANCO
-                ? alugueis.findParaBanco(usuario.getId(), StatusAluguel.EM_ANALISE)
+                ? alugueis.findParaBanco(usuario.getId(),
+                        List.of(StatusAluguel.EM_ANALISE, StatusAluguel.APROVADO))
                 : alugueis.findByAutomovelAgenteUsuarioIdOrderByIdDesc(usuario.getId());
         return lista.stream().map(a -> resposta(a, usuario)).toList();
     }
@@ -212,6 +264,29 @@ public class AluguelService {
         AnaliseFinanceiraResponse analise = quemPede.getPerfil() == Perfil.BANCO
                 ? analisarFinanceiramente(a) : null;
         return AluguelResponse.de(a, analise);
+    }
+
+    private BigDecimal valorTotal(Aluguel a) {
+        long dias = ChronoUnit.DAYS.between(a.getDataInicio(), a.getDataFim()) + 1;
+        return a.getAutomovel().getValorDiaria().multiply(BigDecimal.valueOf(dias)).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private boolean ehDono(Usuario usuario, Aluguel a) {
+        Agente dono = a.getAutomovel().getAgente();
+        return dono != null && dono.getUsuario().getId().equals(usuario.getId());
+    }
+
+    /** Dono do automóvel, banco que avaliou o pedido ou banco que concedeu o crédito. */
+    private boolean agenteAutorizado(Usuario usuario, Aluguel a) {
+        if (ehDono(usuario, a)) {
+            return true;
+        }
+        Agente avaliador = a.getAvaliador();
+        if (avaliador != null && avaliador.getUsuario().getId().equals(usuario.getId())) {
+            return true;
+        }
+        ContratoCredito credito = a.getContratoCredito();
+        return credito != null && credito.getBanco().getUsuario().getId().equals(usuario.getId());
     }
 
     private Agente agenteDe(Usuario usuario) {

@@ -8,4 +8,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     boolean existsByCpf(String cpf);
     boolean existsByRg(String rg);
     Optional<Cliente> findByUsuarioId(Long usuarioId);
+    Optional<Cliente> findByCpf(String cpf);
+    Optional<Cliente> findByRg(String rg);
 }

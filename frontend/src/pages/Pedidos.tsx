@@ -18,8 +18,10 @@ function PedidoCard({ pedido, perfil, onMudou, onErro }: CardProps) {
   const [editando, setEditando] = useState(false)
   const [inicio, setInicio] = useState(pedido.dataInicio)
   const [fim, setFim] = useState(pedido.dataFim)
+  const [valorCredito, setValorCredito] = useState('')
+  const [taxaCredito, setTaxaCredito] = useState('')
 
-  async function executar(caminho: string, metodo: 'PUT' | 'DELETE', body: unknown, ok: string) {
+  async function executar(caminho: string, metodo: 'PUT' | 'POST' | 'DELETE', body: unknown, ok: string) {
     setOcupado(true)
     try {
       await request<Aluguel>(`/api/alugueis/${pedido.id}${caminho}`, { method: metodo, body })
@@ -37,6 +39,10 @@ function PedidoCard({ pedido, perfil, onMudou, onErro }: CardProps) {
   const cliente = perfil === 'CLIENTE'
   const empresa = perfil === 'EMPRESA'
   const banco = perfil === 'BANCO'
+  const agente = empresa || banco
+  const credito = pedido.contratoCredito
+  // Cliente e empresa alteram pedidos pendentes; o banco altera os que estão em análise.
+  const podeAlterarDatas = (cliente || empresa) ? pedido.status === 'PENDENTE' : pedido.status === 'EM_ANALISE'
 
   return (
     <article className="pedido-card">
@@ -58,7 +64,13 @@ function PedidoCard({ pedido, perfil, onMudou, onErro }: CardProps) {
         <div>
           {pedido.status === 'PENDENTE' && cliente && <p className="pedido-meta">A empresa ainda vai aceitar ou recusar o seu pedido.</p>}
           {pedido.status === 'EM_ANALISE' && cliente && <p className="pedido-meta">A empresa aceitou. O banco está analisando sua renda.</p>}
-          {pedido.status === 'APROVADO' && cliente && <p className="pedido-meta">Pedido aprovado pelo banco{pedido.avaliadorNome ? ` (${pedido.avaliadorNome})` : ''}.</p>}
+          {pedido.status === 'APROVADO' && cliente && <p className="pedido-meta">Pedido aprovado pelo banco{pedido.avaliadorNome ? ` (${pedido.avaliadorNome})` : ''}. Aguardando a execução do contrato.</p>}
+          {pedido.status === 'CONTRATADO' && cliente && <p className="pedido-meta">Contrato de aluguel executado.</p>}
+          {credito && (
+            <p className="pedido-meta">
+              Crédito de {moeda(credito.valorFinanciado)} a {credito.taxaJurosMensal}% ao mês — {credito.bancoNome}
+            </p>
+          )}
           {pedido.motivo && <p className="pedido-meta">Motivo: {pedido.motivo}{pedido.avaliadorNome ? ` — ${pedido.avaliadorNome}` : ''}</p>}
         </div>
       </div>
@@ -74,10 +86,10 @@ function PedidoCard({ pedido, perfil, onMudou, onErro }: CardProps) {
       )}
 
       <div className="acoes-pedido">
-        {cliente && pedido.status === 'PENDENTE' && !editando && (
+        {podeAlterarDatas && !editando && (
           <button className="btn-secundario" disabled={ocupado} onClick={() => setEditando(true)}>Alterar datas</button>
         )}
-        {cliente && editando && (
+        {podeAlterarDatas && editando && (
           <>
             <input type="date" min={hojeIso()} value={inicio} onChange={e => setInicio(e.target.value)} />
             <input type="date" min={inicio} value={fim} onChange={e => setFim(e.target.value)} />
@@ -97,6 +109,24 @@ function PedidoCard({ pedido, perfil, onMudou, onErro }: CardProps) {
             <button className="btn" disabled={ocupado} onClick={() => void executar('/aceitar', 'PUT', undefined, 'Pedido aceito e enviado ao banco.')}>Aceitar pedido</button>
             <input type="text" placeholder="Motivo da recusa (opcional)" value={motivo} onChange={e => setMotivo(e.target.value)} />
             <button className="btn-perigo" disabled={ocupado} onClick={() => void executar('/recusar', 'PUT', { motivo }, 'Pedido recusado.')}>Recusar</button>
+          </>
+        )}
+
+        {agente && pedido.status === 'APROVADO' && (
+          <button className="btn" disabled={ocupado}
+            onClick={() => { if (window.confirm('Executar o contrato deste pedido?')) void executar('/contrato', 'PUT', undefined, 'Contrato executado.') }}>
+            Executar contrato
+          </button>
+        )}
+
+        {banco && pedido.status === 'APROVADO' && !credito && (
+          <>
+            <input type="number" min="0" step="0.01" placeholder="Valor financiado (R$)" value={valorCredito} onChange={e => setValorCredito(e.target.value)} />
+            <input type="number" min="0" max="100" step="0.01" placeholder="Juros ao mês (%)" value={taxaCredito} onChange={e => setTaxaCredito(e.target.value)} />
+            <button className="btn-secundario" disabled={ocupado || !(Number(valorCredito) > 0) || taxaCredito === ''}
+              onClick={() => void executar('/credito', 'POST', { valorFinanciado: Number(valorCredito), taxaJurosMensal: Number(taxaCredito) }, 'Contrato de crédito concedido.')}>
+              Conceder crédito
+            </button>
           </>
         )}
 
@@ -154,8 +184,8 @@ export default function Pedidos() {
             <h1>{titulo}</h1>
             <p className="subtitulo">
               {perfil === 'CLIENTE' && 'Acompanhe o status de cada pedido.'}
-              {perfil === 'EMPRESA' && 'Aceite um pedido para enviá-lo ao banco, ou recuse.'}
-              {perfil === 'BANCO' && 'Confira a renda do cliente e aprove ou reprove os pedidos aceitos pelas empresas.'}
+              {perfil === 'EMPRESA' && 'Aceite um pedido para enviá-lo ao banco, ou recuse. Pedidos aprovados podem ter o contrato executado.'}
+              {perfil === 'BANCO' && 'Confira a renda do cliente, aprove ou reprove, conceda crédito e execute o contrato dos pedidos aprovados.'}
             </p>
           </div>
           <span className="contador">{visiveis.length} {visiveis.length === 1 ? 'pedido' : 'pedidos'}</span>

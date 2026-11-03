@@ -11,8 +11,8 @@ interface Me {
 
 const DESCRICAO: Record<string, string> = {
   CLIENTE: 'Escolha um carro no catálogo, peça o aluguel e acompanhe o status do seu pedido.',
-  EMPRESA: 'Aceite ou recuse os pedidos dos seus carros e gerencie a frota (com fotos e valor da diária).',
-  BANCO: 'Analise a renda dos clientes e aprove ou reprove os pedidos aceitos pelas empresas.',
+  EMPRESA: 'Aceite ou recuse os pedidos dos seus carros, execute contratos de pedidos aprovados e gerencie a frota (com fotos e valor da diária).',
+  BANCO: 'Analise a renda dos clientes, aprove ou reprove pedidos, conceda crédito e execute contratos.',
 }
 
 export default function Home() {
@@ -45,7 +45,8 @@ export default function Home() {
         <div className="acoes-home">
           {ehCliente && <Link className="btn-link" to="/catalogo">Ver catálogo</Link>}{' '}
           <Link className="btn-link" to="/pedidos">{ehCliente ? 'Meus pedidos' : 'Pedidos'}</Link>{' '}
-          <Link className="btn-link" to="/automoveis">{ehCliente ? 'Meus automóveis' : 'Gerenciar frota'}</Link>
+          <Link className="btn-link" to="/automoveis">{ehCliente ? 'Meus automóveis' : 'Gerenciar frota'}</Link>{' '}
+          {ehCliente && <Link className="btn-link" to="/meu-cadastro">Meu cadastro</Link>}
         </div>
       </section>
     </main>

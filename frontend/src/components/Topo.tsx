@@ -13,6 +13,7 @@ export default function Topo() {
         {cliente && <Link to="/catalogo">Catálogo</Link>}
         <Link to="/pedidos">Pedidos</Link>
         <Link to="/automoveis">{cliente ? 'Meus automóveis' : 'Frota'}</Link>
+        {cliente && <Link to="/meu-cadastro">Meu cadastro</Link>}
       </nav>
       <div>
         <span className="usuario">{sessao.nome} · {sessao.perfil}</span>

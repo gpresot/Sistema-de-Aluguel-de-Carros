@@ -44,6 +44,10 @@ public class Aluguel {
 
     private LocalDateTime criadoEm = LocalDateTime.now();
 
+    /** Contrato de crédito concedido por um banco (opcional). */
+    @OneToOne(mappedBy = "aluguel", fetch = FetchType.LAZY)
+    private ContratoCredito contratoCredito;
+
     public Long getId() { return id; }
 
     public Agente getAvaliador() { return avaliador; }
@@ -56,6 +60,9 @@ public class Aluguel {
         this.motivo = motivo == null || motivo.isBlank() ? null : motivo.trim();
         this.dataAvaliacao = LocalDateTime.now();
     }
+
+    public ContratoCredito getContratoCredito() { return contratoCredito; }
+    public void setContratoCredito(ContratoCredito contratoCredito) { this.contratoCredito = contratoCredito; }
 
     public Automovel getAutomovel() { return automovel; }
     public void setAutomovel(Automovel automovel) { this.automovel = automovel; }
