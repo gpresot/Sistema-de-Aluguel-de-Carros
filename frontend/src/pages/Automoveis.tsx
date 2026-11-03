@@ -76,7 +76,6 @@ export default function Automoveis() {
       <div className="pagina-automoveis">
         <div className="cabecalho-pagina">
           <div>
-            <p className="eyebrow">GESTÃO DE FROTA</p>
             <h1>Automóveis</h1>
             <p className="subtitulo">Cadastre e gerencie os automóveis vinculados à sua conta.</p>
           </div>
@@ -117,12 +116,14 @@ export default function Automoveis() {
               {lista.map(item => (
                 <article key={item.id} className="car-card">
                   <div className="car-card-imagem">
-                    {item.fotoUrl ? <img src={urlApi(item.fotoUrl)} alt={`${item.marca} ${item.modelo}`} loading="lazy" /> : <span aria-hidden="true">🚗</span>}
+                    {item.fotoUrl ? <img src={urlApi(item.fotoUrl)} alt={`${item.marca} ${item.modelo}`} loading="lazy" /> : <span className="sem-foto">Sem foto</span>}
                   </div>
                   <div className="car-card-corpo">
-                    <p className="eyebrow">{item.ano}</p>
-                    <h3>{item.marca} {item.modelo}</h3>
-                    <p className="car-card-placa">Placa {item.placa} · Matrícula {item.matricula}</p>
+                    <div className="car-card-titulo">
+                      <h3>{item.marca} {item.modelo}</h3>
+                      <span className="car-card-ano">{item.ano}</span>
+                    </div>
+                    <p className="car-card-placa"><span className="placa">{item.placa}</span> matrícula {item.matricula}</p>
                     <p className="car-card-preco">{item.valorDiaria > 0 ? <>{moeda(item.valorDiaria)} <small>/ dia</small></> : <small>Sem valor de diária: edite para definir</small>}</p>
                     <div className="acoes-tabela">
                       <label className="btn-secundario btn-arquivo">

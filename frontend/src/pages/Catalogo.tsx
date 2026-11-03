@@ -76,7 +76,6 @@ export default function Catalogo() {
       <div className="pagina-automoveis">
         <div className="cabecalho-pagina">
           <div>
-            <p className="eyebrow">CATÁLOGO</p>
             <h1>Carros disponíveis</h1>
             <p className="subtitulo">Escolha um veículo para iniciar seu pedido de aluguel.</p>
           </div>
@@ -100,7 +99,7 @@ export default function Catalogo() {
               <h2>Pedido: {selecionado.marca} {selecionado.modelo}</h2>
               <p className="subtitulo">
                 {moeda(selecionado.valorDiaria)} por dia
-                {dias > 0 && <> · {dias} {dias === 1 ? 'dia' : 'dias'} = <strong>{moeda(selecionado.valorDiaria * dias)}</strong></>}
+                {dias > 0 && <>, {dias} {dias === 1 ? 'dia' : 'dias'} = <strong>{moeda(selecionado.valorDiaria * dias)}</strong></>}
               </p>
               <div className="grade-form">
                 <label className="campo">

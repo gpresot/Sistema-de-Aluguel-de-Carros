@@ -36,19 +36,17 @@ export default function Home() {
   return (
     <main className="home">
       <Topo />
-      <section className="card card-largo">
+      <div className="pagina-automoveis pagina-estreita">
         <h1>Olá, {sessao.nome}</h1>
         <p>{DESCRICAO[sessao.perfil]}</p>
-        <p className="subtitulo">
-          Sessão validada no servidor: {me ? `${me.email} (${me.perfil})` : 'verificando...'}
-        </p>
+        {me && <p className="subtitulo">Conectado como {me.email}.</p>}
         <div className="acoes-home">
-          {ehCliente && <Link className="btn-link" to="/catalogo">Ver catálogo</Link>}{' '}
-          <Link className="btn-link" to="/pedidos">{ehCliente ? 'Meus pedidos' : 'Pedidos'}</Link>{' '}
-          <Link className="btn-link" to="/automoveis">{ehCliente ? 'Meus automóveis' : 'Gerenciar frota'}</Link>{' '}
-          {ehCliente && <Link className="btn-link" to="/meu-cadastro">Meu cadastro</Link>}
+          {ehCliente && <Link className="btn-link" to="/catalogo">Ver catálogo</Link>}
+          <Link className={ehCliente ? 'btn-link secundario' : 'btn-link'} to="/pedidos">{ehCliente ? 'Meus pedidos' : 'Pedidos'}</Link>
+          <Link className="btn-link secundario" to="/automoveis">{ehCliente ? 'Meus automóveis' : 'Gerenciar frota'}</Link>
+          {ehCliente && <Link className="btn-link secundario" to="/meu-cadastro">Meu cadastro</Link>}
         </div>
-      </section>
+      </div>
     </main>
   )
 }

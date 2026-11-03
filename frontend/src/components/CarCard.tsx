@@ -13,16 +13,20 @@ export default function CarCard({ carro, onAlugar }: Props) {
       <div className="car-card-imagem">
         {carro.fotoUrl
           ? <img src={urlApi(carro.fotoUrl)} alt={`${carro.marca} ${carro.modelo}`} loading="lazy" />
-          : <span aria-hidden="true">🚗</span>}
+          : <span className="sem-foto">Sem foto</span>}
       </div>
       <div className="car-card-corpo">
-        <p className="eyebrow">{carro.ano}</p>
-        <h3>{carro.marca} {carro.modelo}</h3>
-        <p className="car-card-placa">Placa {carro.placa} · {carro.proprietarioNome}</p>
-        <p className="car-card-preco">{moeda(carro.valorDiaria)} <small>/ dia</small></p>
-        <button className="btn" onClick={() => onAlugar(carro)}>
-          Alugar
-        </button>
+        <div className="car-card-titulo">
+          <h3>{carro.marca} {carro.modelo}</h3>
+          <span className="car-card-ano">{carro.ano}</span>
+        </div>
+        <p className="car-card-placa"><span className="placa">{carro.placa}</span> {carro.proprietarioNome}</p>
+        <div className="car-card-rodape">
+          <p className="car-card-preco">{moeda(carro.valorDiaria)} <small>por dia</small></p>
+          <button className="btn btn-compacto" onClick={() => onAlugar(carro)}>
+            Alugar
+          </button>
+        </div>
       </div>
     </article>
   )

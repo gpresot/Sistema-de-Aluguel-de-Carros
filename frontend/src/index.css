@@ -1,55 +1,88 @@
 :root {
-  --bg: #f4f6f9;
-  --card: #ffffff;
-  --texto: #1c2430;
-  --suave: #5f6b7a;
-  --borda: #d5dbe3;
-  --primaria: #1f5fbf;
-  --primaria-escura: #174a96;
-  --erro: #b42318;
-  --erro-bg: #fdecea;
-  --ok: #067647;
-  --ok-bg: #e6f4ea;
+  --bg: #eceeeb;
+  --card: #f7f8f6;
+  --texto: #1a201c;
+  --suave: #596259;
+  --borda: #c5cbc4;
+  --primaria: #1d4a38;
+  --primaria-escura: #143527;
+  --sobre-primaria: #ffffff;
+  --erro: #a3281d;
+  --erro-bg: #f6e3e0;
+  --ok: #1d6a43;
+  --ok-bg: #e0efe6;
+  --aviso: #7a5200;
+  --aviso-bg: #f5ead0;
+  --fonte-titulo: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --fonte-placa: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
   color-scheme: light dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #12161c;
-    --card: #1b212a;
-    --texto: #e8edf3;
-    --suave: #9aa6b5;
-    --borda: #323b47;
-    --primaria: #5b9bff;
-    --primaria-escura: #82b2ff;
-    --erro: #ff8d85;
-    --erro-bg: #3a1e1c;
-    --ok: #6ddba1;
-    --ok-bg: #16301f;
+    --bg: #141815;
+    --card: #1c211d;
+    --texto: #e6eae6;
+    --suave: #98a398;
+    --borda: #333b34;
+    --primaria: #7cc29b;
+    --primaria-escura: #9bd3b3;
+    --sobre-primaria: #0f1a13;
+    --erro: #ff9a8f;
+    --erro-bg: #3a1f1c;
+    --ok: #7fd3a4;
+    --ok-bg: #172b1f;
+    --aviso: #e6c36b;
+    --aviso-bg: #33290f;
   }
 }
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--texto); }
+h1, h2, h3 { font-family: var(--fonte-titulo); font-weight: 700; line-height: 1.2; }
+a { color: var(--primaria); }
+:focus-visible { outline: 2px solid var(--primaria); outline-offset: 2px; }
 
-.auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+/* ---- Telas de acesso (login, cadastro, senha) ---- */
+.auth-page { min-height: 100vh; display: grid; grid-template-columns: minmax(240px, 32%) 1fr; }
+.auth-marca {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  padding: 40px 36px; background: #1d4a38; color: #eef3ee;
+}
+.auth-marca strong { font-family: var(--fonte-titulo); font-size: 1.5rem; }
+.auth-marca p { margin: 0; max-width: 18ch; color: #c9d8cd; }
+.auth-conteudo { width: 100%; max-width: 440px; padding: 12vh 40px 48px; }
+.auth-largo { max-width: 680px; }
+.auth-conteudo h1 { margin: 0 0 4px; font-size: 1.75rem; }
+@media (max-width: 760px) {
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-marca { flex-direction: row; align-items: center; padding: 16px 20px; }
+  .auth-marca p { display: none; }
+  .auth-conteudo { padding: 28px 20px 40px; }
+}
 
 .card {
   width: 100%; max-width: 400px; background: var(--card);
-  border: 1px solid var(--borda); border-radius: 12px; padding: 28px;
+  border: 1px solid var(--borda); border-radius: 4px; padding: 28px;
 }
 .card-largo { max-width: 640px; }
-.card h1 { margin: 0 0 4px; font-size: 1.5rem; }
+.card h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.home > .card { margin: 32px 0 32px max(16px, calc(50% - 550px)); }
 .subtitulo { margin: 0 0 20px; color: var(--suave); }
 
+/* ---- Formulários ---- */
 .campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; flex: 1; }
 .campo label { font-size: .9rem; font-weight: 600; }
 input {
   width: 100%; padding: 10px 12px; font: inherit; color: inherit;
-  background: transparent; border: 1px solid var(--borda); border-radius: 8px;
+  background: var(--card); border: 1px solid var(--borda); border-radius: 3px;
 }
-input:focus { outline: 2px solid var(--primaria); outline-offset: 1px; }
+select {
+  padding: 10px 12px; font: inherit; color: inherit;
+  background: var(--card); border: 1px solid var(--borda); border-radius: 3px;
+}
 
 .senha-wrap { position: relative; }
 .senha-wrap input { padding-right: 84px; }
@@ -63,134 +96,146 @@ input:focus { outline: 2px solid var(--primaria); outline-offset: 1px; }
 
 .btn {
   width: 100%; padding: 11px; font: inherit; font-weight: 600; cursor: pointer;
-  color: #fff; background: var(--primaria); border: 0; border-radius: 8px;
+  color: var(--sobre-primaria); background: var(--primaria); border: 0; border-radius: 3px;
 }
 .btn:hover:not(:disabled) { background: var(--primaria-escura); }
 .btn:disabled { opacity: .6; cursor: wait; }
+.btn-compacto { width: auto; padding: 8px 16px; }
 .btn-secundario {
   padding: 8px 12px; font: inherit; cursor: pointer; color: var(--texto);
-  background: transparent; border: 1px solid var(--borda); border-radius: 8px;
+  background: transparent; border: 1px solid var(--borda); border-radius: 3px;
 }
+.btn-secundario:hover { border-color: var(--texto); }
 .link-btn {
   padding: 0; font: inherit; font-size: .85rem; cursor: pointer;
   color: var(--primaria); background: none; border: 0;
 }
 .links { display: flex; justify-content: space-between; gap: 12px; margin: 18px 0 0; font-size: .92rem; }
-a { color: var(--primaria); }
 
-.alerta { padding: 10px 12px; border-radius: 8px; margin: 0 0 16px; background: var(--bg); }
+.alerta { padding: 10px 12px; border-radius: 3px; margin: 0 0 16px; background: var(--bg); }
 .alerta.erro { color: var(--erro); background: var(--erro-bg); }
 .alerta.sucesso { color: var(--ok); background: var(--ok-bg); }
 
-.rendimentos { border: 1px solid var(--borda); border-radius: 8px; margin: 0 0 16px; padding: 12px 14px; }
+.rendimentos { border: 1px solid var(--borda); border-radius: 3px; margin: 0 0 16px; padding: 12px 14px; }
 .rendimentos legend { font-size: .9rem; font-weight: 600; padding: 0 6px; }
 .rendimento { align-items: flex-end; }
 .rendimento .remover { margin-bottom: 20px; white-space: nowrap; }
 
+/* ---- Estrutura das páginas internas ---- */
 .home { min-height: 100vh; }
 .topo {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 12px 24px; background: var(--card); border-bottom: 1px solid var(--borda);
 }
 .topo .usuario { margin-right: 12px; color: var(--suave); font-size: .9rem; }
-.home .card { margin: 32px auto; }
+.nav { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.nav strong { font-family: var(--fonte-titulo); font-size: 1.15rem; margin-right: 8px; }
+.nav a { text-decoration: none; color: var(--texto); font-size: .95rem; }
+.nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
 
-.acoes-home { margin-top: 22px; }
-.btn-link { display: inline-block; padding: 10px 16px; color: #fff; background: var(--primaria); border-radius: 8px; text-decoration: none; font-weight: 600; }
 .pagina-automoveis { width: min(1100px, calc(100% - 32px)); margin: 38px auto; }
-.cabecalho-pagina { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
-.cabecalho-pagina h1 { margin:0 0 6px; font-size:2rem; }
-.cabecalho-pagina .subtitulo { margin:0; }
-.eyebrow { margin:0 0 8px; color:var(--suave); font-size:.75rem; font-weight:800; letter-spacing:.12em; }
-.contador { padding:8px 13px; border:1px solid var(--borda); border-radius:999px; color:var(--suave); white-space:nowrap; }
-.painel-automoveis,.lista-automoveis { padding:24px; margin-bottom:24px; background:var(--card); border:1px solid var(--borda); border-radius:14px; }
-.painel-automoveis h2,.lista-automoveis h2 { margin:0 0 20px; font-size:1.15rem; }
-.grade-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 16px; }
-.grade-form .campo span { font-size:.9rem; font-weight:600; }
-.botoes-form,.titulo-lista,.acoes-tabela { display:flex; align-items:center; gap:10px; }
-.botoes-form .btn { width:auto; padding-inline:20px; }
-.titulo-lista { justify-content:space-between; }
-.titulo-lista h2 { margin:0; }
-.estado-vazio { padding:26px; text-align:center; color:var(--suave); background:var(--bg); border-radius:9px; }
-.tabela-wrap { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; text-align:left; }
-th,td { padding:13px 12px; border-bottom:1px solid var(--borda); white-space:nowrap; }
-th { color:var(--suave); font-size:.8rem; }
-.btn-perigo { padding:8px 12px; border:1px solid #b42318; border-radius:8px; color:#b42318; background:transparent; cursor:pointer; font:inherit; }
-@media(max-width:760px) { .grade-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .cabecalho-pagina { align-items:flex-start; } }
-@media(max-width:520px) { .grade-form { grid-template-columns:1fr; } .painel-automoveis,.lista-automoveis { padding:16px; } .botoes-form { flex-wrap:wrap; } }
+.pagina-estreita { max-width: 640px; margin-left: max(16px, calc(50% - 550px)); }
+.pagina-estreita h1 { margin: 0 0 8px; font-size: 1.9rem; }
+.acoes-home { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.btn-link {
+  display: inline-block; padding: 10px 16px; border-radius: 3px; text-decoration: none; font-weight: 600;
+  color: var(--sobre-primaria); background: var(--primaria);
+}
+.btn-link:hover { background: var(--primaria-escura); }
+.btn-link.secundario { color: var(--texto); background: transparent; border: 1px solid var(--borda); }
+.btn-link.secundario:hover { border-color: var(--texto); }
 
+.cabecalho-pagina { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+.cabecalho-pagina h1 { margin: 0 0 6px; font-size: 1.9rem; }
+.cabecalho-pagina .subtitulo { margin: 0; max-width: 62ch; }
+.contador { color: var(--suave); white-space: nowrap; }
+
+.painel-automoveis, .lista-automoveis {
+  padding: 24px; margin-bottom: 24px; background: var(--card);
+  border: 1px solid var(--borda); border-radius: 4px;
+}
+.painel-automoveis h2, .lista-automoveis h2 { margin: 0 0 20px; font-size: 1.2rem; }
+.grade-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
+.grade-form .campo span { font-size: .9rem; font-weight: 600; }
+.botoes-form, .titulo-lista, .acoes-tabela { display: flex; align-items: center; gap: 10px; }
+.botoes-form .btn { width: auto; padding-inline: 20px; }
+.titulo-lista { justify-content: space-between; }
+.titulo-lista h2 { margin: 0; }
+.estado-vazio { padding: 26px; color: var(--suave); background: var(--bg); border-radius: 3px; }
+.tabela-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th, td { padding: 13px 12px; border-bottom: 1px solid var(--borda); white-space: nowrap; }
+th { color: var(--suave); font-size: .85rem; font-weight: 600; }
+.btn-perigo {
+  padding: 8px 12px; border: 1px solid var(--erro); border-radius: 3px;
+  color: var(--erro); background: transparent; cursor: pointer; font: inherit;
+}
+@media (max-width: 760px) {
+  .grade-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cabecalho-pagina { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
+@media (max-width: 520px) {
+  .grade-form { grid-template-columns: 1fr; }
+  .painel-automoveis, .lista-automoveis { padding: 16px; }
+  .botoes-form { flex-wrap: wrap; }
+}
+
+/* ---- Automóveis ---- */
 .car-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
-  width: min(1100px, calc(100% - 32px));
-  margin: 0 auto 40px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;
+  width: min(1100px, calc(100% - 32px)); margin: 0 auto 40px;
 }
-
+.lista-automoveis .car-grid { width: auto; margin: 0; }
 .car-card {
-  background: var(--card);
-  border: 1px solid var(--borda);
-  border-radius: 14px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  background: var(--card); border: 1px solid var(--borda); border-radius: 4px;
+  overflow: hidden; display: flex; flex-direction: column;
 }
-
 .car-card-imagem {
-  height: 120px;
-  display: grid;
-  place-items: center;
-  font-size: 3rem;
-  background: var(--bg);
+  aspect-ratio: 3 / 2; overflow: hidden; display: grid; place-items: center;
+  background: var(--bg); border-bottom: 1px solid var(--borda);
 }
-
-.car-card-corpo {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.car-card-corpo h3 { margin: 0; font-size: 1.1rem; }
-
-.car-card-placa { margin: 0 0 10px; color: var(--suave); font-size: .9rem; }
-
-.car-card-corpo .btn { margin-top: auto; }
-
-.lista-automoveis .car-grid {
-  width: auto;
-  margin: 0;
-}
-/* ---- Fotos e preços nos cards ---- */
-.car-card-imagem { overflow: hidden; }
 .car-card-imagem img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.car-card-preco { margin: 0 0 10px; font-weight: 700; font-size: 1.1rem; }
-.car-card-preco small { color: var(--suave); font-weight: 400; }
+.sem-foto { color: var(--suave); font-size: .85rem; }
+.car-card-corpo { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.car-card-titulo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.car-card-titulo h3 { margin: 0; font-size: 1.1rem; }
+.car-card-ano { color: var(--suave); font-variant-numeric: tabular-nums; }
+.car-card-placa { margin: 0; color: var(--suave); font-size: .9rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.car-card-rodape { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: auto; padding-top: 6px; }
+.car-card-preco { margin: 0; font-weight: 700; font-size: 1.05rem; }
+.car-card-preco small { color: var(--suave); font-weight: 400; font-size: .85rem; }
+.car-card-corpo > .acoes-tabela { margin-top: auto; flex-wrap: wrap; }
 .btn-arquivo { display: inline-block; cursor: pointer; }
 .form-pedido { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--borda); }
-.nav { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.nav a { text-decoration: none; color: var(--texto); font-size: .95rem; }
-.nav a:hover { color: var(--primaria); }
+
+/* Placa: o dado que identifica cada carro, no formato das placas cinza antigas */
+.placa {
+  display: inline-block; padding: 1px 7px; border: 1.5px solid #1a201c; border-radius: 3px;
+  background: #d8dad5; color: #1a201c; font-family: var(--fonte-placa); font-size: .82rem;
+  font-weight: 700; letter-spacing: .06em;
+}
 
 /* ---- Pedidos ---- */
-.lista-pedidos { display: grid; gap: 16px; }
-.pedido-card { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 18px; display: grid; gap: 12px; }
+.lista-pedidos { display: grid; gap: 12px; }
+.pedido-card { background: var(--card); border: 1px solid var(--borda); border-radius: 4px; padding: 18px; display: grid; gap: 12px; }
 .pedido-topo { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
 .pedido-topo h3 { margin: 0 0 4px; font-size: 1.1rem; }
 .pedido-meta { margin: 0; color: var(--suave); font-size: .9rem; }
 .pedido-corpo { display: flex; gap: 16px; align-items: center; }
-.pedido-foto { flex: 0 0 120px; height: 80px; border-radius: 10px; overflow: hidden; background: var(--bg); display: grid; place-items: center; font-size: 2rem; }
+.pedido-foto { flex: 0 0 120px; height: 80px; border-radius: 3px; overflow: hidden; background: var(--bg); display: grid; place-items: center; }
 .pedido-foto img { width: 100%; height: 100%; object-fit: cover; }
-.selo { padding: 4px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; white-space: nowrap; border: 1px solid var(--borda); }
-.selo.PENDENTE { color: #8a5a00; background: #fff4d6; border-color: #f0d28a; }
-.selo.EM_ANALISE { color: var(--primaria); background: color-mix(in srgb, var(--primaria) 12%, transparent); border-color: var(--primaria); }
+.selo {
+  padding: 3px 9px; border-radius: 2px; font-size: .82rem; font-weight: 600; white-space: nowrap;
+  border: 1px solid var(--borda); color: var(--texto);
+}
+.selo.PENDENTE { color: var(--aviso); background: var(--aviso-bg); border-color: var(--aviso); }
+.selo.EM_ANALISE { color: var(--texto); background: transparent; border-color: var(--texto); }
 .selo.APROVADO { color: var(--ok); background: var(--ok-bg); border-color: var(--ok); }
+.selo.CONTRATADO { color: var(--sobre-primaria); background: var(--primaria); border-color: var(--primaria); }
 .selo.REJEITADO, .selo.CANCELADO { color: var(--erro); background: var(--erro-bg); border-color: var(--erro); }
-.analise-renda { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--bg); display: grid; gap: 4px; font-size: .92rem; }
+.analise-renda { margin: 0; padding: 12px 14px; border-radius: 3px; background: var(--bg); display: grid; gap: 4px; font-size: .92rem; }
 .analise-renda.negativa { background: var(--erro-bg); }
 .analise-renda.positiva { background: var(--ok-bg); }
 .acoes-pedido { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .acoes-pedido .btn { width: auto; padding-inline: 18px; }
 .acoes-pedido input[type="text"], .acoes-pedido input[type="date"] { width: auto; min-width: 180px; }
-select { padding: 10px 12px; font: inherit; color: inherit; background: var(--card); border: 1px solid var(--borda); border-radius: 8px; }

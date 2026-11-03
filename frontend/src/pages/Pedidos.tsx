@@ -48,18 +48,18 @@ function PedidoCard({ pedido, perfil, onMudou, onErro }: CardProps) {
     <article className="pedido-card">
       <div className="pedido-topo">
         <div>
-          <h3>#{pedido.id} · {carro.marca} {carro.modelo} ({carro.ano})</h3>
+          <h3>Pedido {pedido.id}: {carro.marca} {carro.modelo} ({carro.ano})</h3>
           <p className="pedido-meta">
-            {dataBr(pedido.dataInicio)} a {dataBr(pedido.dataFim)} · {pedido.dias} {pedido.dias === 1 ? 'dia' : 'dias'} · <strong>{moeda(pedido.valorTotal)}</strong>
+            {dataBr(pedido.dataInicio)} a {dataBr(pedido.dataFim)}, {pedido.dias} {pedido.dias === 1 ? 'dia' : 'dias'}, <strong>{moeda(pedido.valorTotal)}</strong>
           </p>
-          {!cliente && <p className="pedido-meta">Cliente: {pedido.clienteNome} · Placa {carro.placa}</p>}
+          {!cliente && <p className="pedido-meta">Cliente: {pedido.clienteNome}, placa <span className="placa">{carro.placa}</span></p>}
         </div>
         <span className={`selo ${pedido.status}`}>{ROTULO_STATUS[pedido.status] ?? pedido.status}</span>
       </div>
 
       <div className="pedido-corpo">
         <div className="pedido-foto">
-          {carro.fotoUrl ? <img src={urlApi(carro.fotoUrl)} alt={`${carro.marca} ${carro.modelo}`} loading="lazy" /> : <span aria-hidden="true">🚗</span>}
+          {carro.fotoUrl ? <img src={urlApi(carro.fotoUrl)} alt={`${carro.marca} ${carro.modelo}`} loading="lazy" /> : <span className="sem-foto">Sem foto</span>}
         </div>
         <div>
           {pedido.status === 'PENDENTE' && cliente && <p className="pedido-meta">A empresa ainda vai aceitar ou recusar o seu pedido.</p>}
@@ -180,7 +180,6 @@ export default function Pedidos() {
       <div className="pagina-automoveis">
         <div className="cabecalho-pagina">
           <div>
-            <p className="eyebrow">PEDIDOS DE ALUGUEL</p>
             <h1>{titulo}</h1>
             <p className="subtitulo">
               {perfil === 'CLIENTE' && 'Acompanhe o status de cada pedido.'}

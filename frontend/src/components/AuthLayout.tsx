@@ -10,7 +10,11 @@ interface Props {
 export default function AuthLayout({ titulo, subtitulo, largo, children }: Props) {
   return (
     <main className="auth-page">
-      <section className={largo ? 'card card-largo' : 'card'}>
+      <aside className="auth-marca">
+        <strong>Aluguel de Carros</strong>
+        <p>Carros clássicos, do pedido ao contrato.</p>
+      </aside>
+      <section className={largo ? 'auth-conteudo auth-largo' : 'auth-conteudo'}>
         <h1>{titulo}</h1>
         {subtitulo && <p className="subtitulo">{subtitulo}</p>}
         {children}

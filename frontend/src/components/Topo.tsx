@@ -16,7 +16,7 @@ export default function Topo() {
         {cliente && <Link to="/meu-cadastro">Meu cadastro</Link>}
       </nav>
       <div>
-        <span className="usuario">{sessao.nome} · {sessao.perfil}</span>
+        <span className="usuario">{sessao.nome}, {sessao.perfil.toLowerCase()}</span>
         <button className="btn-secundario" onClick={logout}>Sair</button>
       </div>
     </header>
