@@ -28,16 +28,25 @@
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
 - [Arquitetura](#-arquitetura)
   - [Diagramas](#diagramas)
+  - [Modelo inicial × Protótipo final](#modelo-inicial--protótipo-final)
 - [Instalação e Execução](#-instalação-e-execução)
   - [Pré-requisitos](#pré-requisitos)
   - [Variáveis de Ambiente](#-variáveis-de-ambiente)
+    - [1. Back-end (Spring Boot)](#1-back-end-spring-boot)
+    - [2. Front-end (React, Vite)](#2-front-end-react-vite)
   - [Instalação de Dependências](#-instalação-de-dependências)
   - [Inicialização do Banco de Dados (Supabase)](#-inicialização-do-banco-de-dados-supabase)
   - [Como Executar a Aplicação](#-como-executar-a-aplicação)
+    - [Terminal 1: Back-end (Spring Boot)](#terminal-1-back-end-spring-boot)
+    - [Terminal 2: Front-end (React, Vite)](#terminal-2-front-end-react-vite)
 - [Deploy](#-deploy)
 - [Estrutura de Pastas](#-estrutura-de-pastas)
 - [Demonstração](#-demonstração)
+  - [Aplicação Web](#-aplicação-web)
+  - [Exemplo de Saída no Terminal (API)](#-exemplo-de-saída-no-terminal-api)
 - [Testes](#-testes)
+  - [Testes Unitários e de Integração](#testes-unitários-e-de-integração)
+  - [Testes End-to-End (E2E)](#testes-end-to-end-e2e)
 - [Documentações utilizadas](#-documentações-utilizadas)
 - [Autores](#-autores)
 - [Contribuição](#-contribuição)
@@ -48,7 +57,9 @@
 
 ## 🔗 Links Úteis
 * 📖 **Modelagem (UML):** [`docs/modelagem.md`](./docs/modelagem.md)
-  > 📚 **Descrição:** Casos de uso, histórias de usuário, diagrama de classes, estados do pedido e diagrama de pacotes (versão 1.3).
+  > 📚 **Descrição:** Casos de uso, histórias de usuário, diagrama de classes, estados do pedido e diagrama de pacotes e comparação entre o modelo inicial e o protótipo final (versão 1.4).
+* 📐 **Modelo inicial (v1.0):** [`docs/modelo-inicial.md`](./docs/modelo-inicial.md)
+  > 🧩 **Descrição:** Primeira versão da modelagem, feita a partir do enunciado, antes da implementação.
 * 🗄️ **Migração do banco:** [`docs/migracao_status_contratado.sql`](./docs/migracao_status_contratado.sql)
   > 💾 **Descrição:** Script a executar uma única vez no SQL Editor do Supabase, se o banco foi criado antes do status `CONTRATADO`.
 
@@ -119,6 +130,12 @@ stateDiagram-v2
 * **Autenticação:** JWT (jjwt 0.12.6) com senhas em BCrypt
 * **Build e dependências:** Apache Maven (Maven Wrapper incluso)
 
+### ⚙️ Infraestrutura & DevOps
+
+* **Banco de dados em nuvem:** Supabase (PostgreSQL gerenciado)
+* **Versionamento:** Git e GitHub
+* **Containerização, orquestração e CI/CD:** não utilizados nesta versão do protótipo
+
 ---
 
 ## 🏗 Arquitetura
@@ -134,6 +151,8 @@ O back-end segue a arquitetura **MVC em camadas**: `controller` recebe as requis
 ### Diagramas
 
 Diagrama de pacotes (visão lógica). Os demais diagramas estão em [`docs/modelagem.md`](./docs/modelagem.md).
+
+A comparação entre o modelo inicial e o protótipo final, com as modificações feitas e o motivo de cada uma, está na seção 6 de [`docs/modelagem.md`](./docs/modelagem.md#6-comparação-modelo-inicial--protótipo-final).
 
 ```mermaid
 flowchart TB
@@ -175,6 +194,21 @@ flowchart TB
     controller --> exception
     repository -- JDBC --> DB
 ```
+
+### Modelo inicial × Protótipo final
+
+O modelo inicial (v1.0, em [`docs/modelo-inicial.md`](./docs/modelo-inicial.md)) foi feito a partir do enunciado. Durante a implementação ele foi revisado até a versão 1.4 de [`docs/modelagem.md`](./docs/modelagem.md), alinhada ao código. As principais mudanças:
+
+| Modelo inicial | Protótipo final |
+| :--- | :--- |
+| `PedidoAluguel` com status genérico | `Aluguel` com os estados `PENDENTE`, `EM_ANALISE`, `APROVADO`, `REJEITADO`, `CONTRATADO` e `CANCELADO` |
+| Login com usuário e senha | Login com **e-mail** e senha, perfis `CLIENTE`, `EMPRESA` e `BANCO`, sessão com JWT |
+| Automóvel com proprietário sem restrição | Exatamente **um** proprietário (cliente, empresa ou banco) |
+| Contrato de crédito apenas citado | `ContratoCredito` implementado, concedido só por banco, um por pedido |
+| Análise financeira sem critério | Aprovação exige parcela de até **30% da renda** do cliente |
+| Sem foto, diária ou recuperação de senha | `FotoAutomovel`, `valorDiaria` e `PasswordResetToken` |
+
+A comparação completa, com o motivo de cada mudança, está na [seção 6 de `docs/modelagem.md`](./docs/modelagem.md#6-comparação-modelo-inicial--protótipo-final).
 
 ---
 
@@ -433,6 +467,8 @@ curl -X GET 'http://localhost:8080/api/alugueis/meus' \
 
 ## 🧪 Testes
 
+### Testes Unitários e de Integração
+
 O back-end tem um teste de carga de contexto (`AluguelApplicationTests`). Ele sobe a aplicação inteira, então **precisa das variáveis de ambiente do banco** definidas:
 
 ```bash
@@ -447,6 +483,10 @@ Para checar o front-end (verifica os tipos TypeScript e gera o build):
 cd frontend
 npm run build
 ```
+
+### Testes End-to-End (E2E)
+
+Não há testes de ponta a ponta nesta versão do protótipo.
 
 ---
 
