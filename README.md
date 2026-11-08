@@ -1,4 +1,4 @@
-# 🚗 Presot Clássicos — Sistema de Aluguel de Carros 🔑
+# 🚗 Sistema de Aluguel de Carros 🔑
 
 > [!NOTE]
 > Sistema web para gestão de aluguéis de automóveis clássicos: o cliente cria e acompanha pedidos pela Internet, a empresa aceita ou recusa, e o banco faz a análise financeira e concede crédito até a execução do contrato.
